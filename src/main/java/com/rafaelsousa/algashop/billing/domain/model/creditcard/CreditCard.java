@@ -1,10 +1,17 @@
 package com.rafaelsousa.algashop.billing.domain.model.creditcard;
 
+import lombok.*;
+
 import java.time.OffsetDateTime;
-import java.util.Objects;
 import java.util.UUID;
 
+@Getter
+@Setter(AccessLevel.PRIVATE)
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class CreditCard {
+
+    @EqualsAndHashCode.Include
     private UUID id;
     private UUID customerId;
     private OffsetDateTime createdAt;
@@ -12,17 +19,7 @@ public class CreditCard {
     private String brand;
     private Integer expMonth;
     private Integer expYear;
+
+    @Setter(AccessLevel.PUBLIC)
     private String gatewayCode;
-
-    @Override
-    public boolean equals(Object o) {
-        if (o == null || getClass() != o.getClass()) return false;
-        CreditCard that = (CreditCard) o;
-        return Objects.equals(id, that.id);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hashCode(id);
-    }
 }
