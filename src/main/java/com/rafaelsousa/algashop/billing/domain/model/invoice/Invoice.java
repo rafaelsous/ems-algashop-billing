@@ -3,13 +3,11 @@ package com.rafaelsousa.algashop.billing.domain.model.invoice;
 import com.rafaelsousa.algashop.billing.domain.model.DomainException;
 import com.rafaelsousa.algashop.billing.domain.model.IdGenerator;
 import lombok.*;
+import org.springframework.util.StringUtils;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 @Getter
 @Setter(AccessLevel.PRIVATE)
@@ -34,6 +32,18 @@ public class Invoice {
     private Set<LineItem> items = new HashSet<>();
 
     public static Invoice issue(String orderId, UUID customerId, Payer payer, Set<LineItem> items) {
+        Objects.requireNonNull(customerId);
+        Objects.requireNonNull(payer);
+        Objects.requireNonNull(items);
+
+        if (!StringUtils.hasText(orderId)) {
+            throw new IllegalArgumentException("Order ID cannot be empty");
+        }
+
+        if (items.isEmpty()) {
+            throw new IllegalArgumentException("Invoice must have at least one item");
+        }
+
         BigDecimal totalAmount = items.stream().map(LineItem::getAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
 
         return new Invoice(
