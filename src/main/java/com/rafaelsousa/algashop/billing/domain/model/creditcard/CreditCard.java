@@ -1,5 +1,6 @@
 package com.rafaelsousa.algashop.billing.domain.model.creditcard;
 
+import com.rafaelsousa.algashop.billing.domain.model.ErrorMessages;
 import com.rafaelsousa.algashop.billing.domain.model.IdGenerator;
 import lombok.*;
 import org.springframework.util.StringUtils;
@@ -32,19 +33,19 @@ public class CreditCard {
         Objects.requireNonNull(expYear);
 
         if (!StringUtils.hasText(lastNumbers)) {
-            throw new IllegalArgumentException("Last numbers cannot be empty");
+            throw new IllegalArgumentException(ErrorMessages.ERROR_CREDIT_CARD_LAST_NUMBERS_CANNOT_BE_EMPTY);
         }
 
         if (!StringUtils.hasText(brand)) {
-            throw new IllegalArgumentException("Brand cannot be empty");
+            throw new IllegalArgumentException(ErrorMessages.ERROR_CREDIT_CARD_BRAND_CANNOT_BE_EMPTY);
         }
 
         if (expMonth < 1 || expMonth > 12) {
-            throw new IllegalArgumentException("Invalid expiration month");
+            throw new IllegalArgumentException(ErrorMessages.ERROR_CREDIT_CARD_INVALID_EXPIRATION_MONTH);
         }
 
         if (expYear < OffsetDateTime.now().getYear()) {
-            throw new IllegalArgumentException("Invalid expiration year");
+            throw new IllegalArgumentException(ErrorMessages.ERROR_CREDIT_CARD_INVALID_EXPIRATION_YEAR);
         }
 
         return new CreditCard(
@@ -61,7 +62,7 @@ public class CreditCard {
 
     public void setGatewayCode(String gatewayCode) {
         if (!StringUtils.hasText(gatewayCode)) {
-            throw new IllegalArgumentException("Gateway code cannot be empty");
+            throw new IllegalArgumentException(ErrorMessages.ERROR_CREDIT_CARD_GATEWAY_CODE_CANNOT_BE_EMPTY);
         }
 
         this.gatewayCode = gatewayCode;

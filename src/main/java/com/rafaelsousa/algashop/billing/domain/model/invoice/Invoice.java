@@ -1,6 +1,7 @@
 package com.rafaelsousa.algashop.billing.domain.model.invoice;
 
 import com.rafaelsousa.algashop.billing.domain.model.DomainException;
+import com.rafaelsousa.algashop.billing.domain.model.ErrorMessages;
 import com.rafaelsousa.algashop.billing.domain.model.IdGenerator;
 import lombok.*;
 import org.springframework.util.StringUtils;
@@ -37,11 +38,11 @@ public class Invoice {
         Objects.requireNonNull(items);
 
         if (!StringUtils.hasText(orderId)) {
-            throw new IllegalArgumentException("Order ID cannot be empty");
+            throw new IllegalArgumentException(ErrorMessages.ERROR_INVOICE_ORDER_ID_CANNOT_BE_EMPTY);
         }
 
         if (items.isEmpty()) {
-            throw new IllegalArgumentException("Invoice must have at least one item");
+            throw new IllegalArgumentException(ErrorMessages.ERROR_INVOICE_MUST_HAVE_AT_LEAST_ONE_ITEM);
         }
 
         BigDecimal totalAmount = items.stream().map(LineItem::getAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
@@ -68,8 +69,8 @@ public class Invoice {
     }
 
     public void markAsPaid() {
-        if (isUnpaid()) {
-            throw new DomainException("Invoice %s with status %s cannot be marked as paid"
+        if (!isUnpaid()) {
+            throw new DomainException(ErrorMessages.ERROR_INVOICE_CANNOT_BE_MARKED_AS_PAID
                     .formatted(this.getId(), this.getStatus().name().toLowerCase()));
         }
 
@@ -79,7 +80,7 @@ public class Invoice {
 
     public void cancel(String cancelReason) {
         if (isCanceled()) {
-            throw new DomainException("Invoice %s is already canceled".formatted(this.getId()));
+            throw new DomainException(ErrorMessages.ERROR_INVOICE_IS_ALREADY_CANCELED.formatted(this.getId()));
         }
 
         setCancelReason(cancelReason);
@@ -88,8 +89,8 @@ public class Invoice {
     }
 
     public void assignPaymentGatewayCode(String code) {
-        if (isUnpaid()) {
-            throw new DomainException("Invoice %s with status %s cannot be assigned a payment gateway code"
+        if (!isUnpaid()) {
+            throw new DomainException(ErrorMessages.ERROR_INVOICE_CANNOT_BE_ASSIGNED_PAYMENT_GATEWAY_CODE
                     .formatted(this.getId(), this.getStatus().name().toLowerCase()));
         }
 
@@ -97,8 +98,8 @@ public class Invoice {
     }
 
     public void changePaymentSettings(PaymentMethod paymentMethod, UUID creditCardId) {
-        if (isUnpaid()) {
-            throw new DomainException("Invoice %s with status %s cannot be assigned a payment gateway code"
+        if (!isUnpaid()) {
+            throw new DomainException(ErrorMessages.ERROR_INVOICE_CANNOT_BE_ASSIGNED_PAYMENT_GATEWAY_CODE
                     .formatted(this.getId(), this.getStatus().name().toLowerCase()));
         }
 
