@@ -1,5 +1,6 @@
 package com.rafaelsousa.algashop.billing.domain.model.invoice;
 
+import com.rafaelsousa.algashop.billing.domain.model.IdGenerator;
 import lombok.*;
 
 import java.math.BigDecimal;
@@ -13,10 +14,12 @@ import java.util.UUID;
 @Setter(AccessLevel.PRIVATE)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PROTECTED)
 public class Invoice {
 
     @EqualsAndHashCode.Include
     private UUID id;
+    private String orderId;
     private String customerId;
     private OffsetDateTime issuedAt;
     private OffsetDateTime paidAt;
@@ -28,6 +31,26 @@ public class Invoice {
     private PaymentSettings paymentSettings;
     private Payer payer;
     private Set<LineItem> items = new HashSet<>();
+
+    public static Invoice issue(String orderId, UUID customerId, Payer payer, Set<LineItem> items) {
+        BigDecimal totalAmount = items.stream().map(LineItem::getAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        return new Invoice(
+                IdGenerator.generateTimeBasedUUID(),
+                orderId,
+                customerId.toString(),
+                OffsetDateTime.now(),
+                null,
+                null,
+                null,
+                OffsetDateTime.now().plusDays(3),
+                totalAmount,
+                InvoiceStatus.UNPAID,
+                null,
+                payer,
+                items
+        );
+    }
 
     public Set<LineItem> getItems() {
         return Collections.unmodifiableSet(this.items);
@@ -49,7 +72,8 @@ public class Invoice {
     }
 
     public void changePaymentSettings(PaymentMethod paymentMethod, UUID creditCardId) {
-
+        PaymentSettings paymentSettings = PaymentSettings.brandNew(paymentMethod, creditCardId);
+        this.setPaymentSettings(paymentSettings);
     }
 
     public boolean isPaid() {
