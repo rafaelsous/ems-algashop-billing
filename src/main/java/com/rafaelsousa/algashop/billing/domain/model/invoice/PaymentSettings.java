@@ -26,4 +26,8 @@ public class PaymentSettings {
                 paymentMethod
         );
     }
+
+    void assignGatewayCode(String code) {
+        this.setGatewayCode(code);
+    }
 }

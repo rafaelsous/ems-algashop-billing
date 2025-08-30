@@ -1,5 +1,6 @@
 package com.rafaelsousa.algashop.billing.domain.model.invoice;
 
+import com.rafaelsousa.algashop.billing.domain.model.DomainException;
 import com.rafaelsousa.algashop.billing.domain.model.IdGenerator;
 import lombok.*;
 
@@ -57,34 +58,52 @@ public class Invoice {
     }
 
     public void markAsPaid() {
-        this.status = InvoiceStatus.PAID;
-        this.paidAt = OffsetDateTime.now();
+        if (isUnpaid()) {
+            throw new DomainException("Invoice %s with status %s cannot be marked as paid"
+                    .formatted(this.getId(), this.getStatus().name().toLowerCase()));
+        }
+
+        setStatus(InvoiceStatus.PAID);
+        setPaidAt(OffsetDateTime.now());
     }
 
-    public void cancel(String reason) {
-        this.status = InvoiceStatus.CANCELED;
-        this.cancelReason = reason;
-        this.canceledAt = OffsetDateTime.now();
+    public void cancel(String cancelReason) {
+        if (isCanceled()) {
+            throw new DomainException("Invoice %s is already canceled".formatted(this.getId()));
+        }
+
+        setCancelReason(cancelReason);
+        setStatus(InvoiceStatus.CANCELED);
+        setCanceledAt(OffsetDateTime.now());
     }
 
     public void assignPaymentGatewayCode(String code) {
+        if (isUnpaid()) {
+            throw new DomainException("Invoice %s with status %s cannot be assigned a payment gateway code"
+                    .formatted(this.getId(), this.getStatus().name().toLowerCase()));
+        }
 
+        this.paymentSettings.assignGatewayCode(code);
     }
 
     public void changePaymentSettings(PaymentMethod paymentMethod, UUID creditCardId) {
-        PaymentSettings paymentSettings = PaymentSettings.brandNew(paymentMethod, creditCardId);
-        this.setPaymentSettings(paymentSettings);
+        if (isUnpaid()) {
+            throw new DomainException("Invoice %s with status %s cannot be assigned a payment gateway code"
+                    .formatted(this.getId(), this.getStatus().name().toLowerCase()));
+        }
+
+        this.setPaymentSettings(PaymentSettings.brandNew(paymentMethod, creditCardId));
     }
 
     public boolean isPaid() {
-        return this.status == InvoiceStatus.PAID;
+        return InvoiceStatus.PAID.equals(this.getStatus());
     }
 
     public boolean isUnpaid() {
-        return !this.isPaid();
+        return InvoiceStatus.UNPAID.equals(this.getStatus());
     }
 
     public boolean isCanceled() {
-        return this.status == InvoiceStatus.CANCELED;
+        return InvoiceStatus.CANCELED.equals(this.getStatus());
     }
 }
