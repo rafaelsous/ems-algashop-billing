@@ -3,6 +3,7 @@ package com.rafaelsousa.algashop.billing.domain.model.invoice;
 import com.rafaelsousa.algashop.billing.domain.model.DomainException;
 import com.rafaelsousa.algashop.billing.domain.model.ErrorMessages;
 import com.rafaelsousa.algashop.billing.domain.model.IdGenerator;
+import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.util.StringUtils;
 
@@ -12,11 +13,12 @@ import java.util.*;
 
 @Getter
 @Setter(AccessLevel.PRIVATE)
-@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
+@Entity
 public class Invoice {
 
+    @Id
     @EqualsAndHashCode.Include
     private UUID id;
     private String orderId;
@@ -27,8 +29,13 @@ public class Invoice {
     private String cancelReason;
     private OffsetDateTime expiresAt;
     private BigDecimal totalAmount;
+
+    @Enumerated(EnumType.STRING)
     private InvoiceStatus status;
+
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private PaymentSettings paymentSettings;
+
     private Payer payer;
     private Set<LineItem> items = new HashSet<>();
 
@@ -103,6 +110,7 @@ public class Invoice {
                     .formatted(this.getId(), this.getStatus().name().toLowerCase()));
         }
 
+        paymentSettings.setInvoice(this);
         this.setPaymentSettings(PaymentSettings.brandNew(paymentMethod, creditCardId));
     }
 
@@ -116,5 +124,17 @@ public class Invoice {
 
     public boolean isCanceled() {
         return InvoiceStatus.CANCELED.equals(this.getStatus());
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        Invoice invoice = (Invoice) o;
+        return Objects.equals(id, invoice.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(id);
     }
 }

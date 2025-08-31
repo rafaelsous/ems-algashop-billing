@@ -2,6 +2,8 @@ package com.rafaelsousa.algashop.billing.domain.model.creditcard;
 
 import com.rafaelsousa.algashop.billing.domain.model.ErrorMessages;
 import com.rafaelsousa.algashop.billing.domain.model.IdGenerator;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
 import lombok.*;
 import org.springframework.util.StringUtils;
 
@@ -11,11 +13,12 @@ import java.util.UUID;
 
 @Getter
 @Setter(AccessLevel.PRIVATE)
-@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
+@Entity
 public class CreditCard {
 
+    @Id
     @EqualsAndHashCode.Include
     private UUID id;
     private UUID customerId;
@@ -66,5 +69,17 @@ public class CreditCard {
         }
 
         this.gatewayCode = gatewayCode;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        CreditCard that = (CreditCard) o;
+        return Objects.equals(id, that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(id);
     }
 }
