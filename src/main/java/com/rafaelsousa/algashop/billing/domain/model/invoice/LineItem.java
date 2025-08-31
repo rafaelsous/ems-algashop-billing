@@ -2,6 +2,7 @@ package com.rafaelsousa.algashop.billing.domain.model.invoice;
 
 import com.rafaelsousa.algashop.billing.domain.model.ErrorMessages;
 import com.rafaelsousa.algashop.billing.domain.model.FieldValidations;
+import jakarta.persistence.Embeddable;
 import lombok.*;
 
 import java.math.BigDecimal;
@@ -11,6 +12,7 @@ import java.util.Objects;
 @EqualsAndHashCode
 @Setter(AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Embeddable
 public class LineItem {
     private Integer number;
     private String name;

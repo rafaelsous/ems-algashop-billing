@@ -36,7 +36,11 @@ public class Invoice {
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private PaymentSettings paymentSettings;
 
+    @Embedded
     private Payer payer;
+
+    @ElementCollection
+    @CollectionTable(name = "invoice_line_item", joinColumns = @JoinColumn(name = "invoice_id"))
     private Set<LineItem> items = new HashSet<>();
 
     public static Invoice issue(String orderId, UUID customerId, Payer payer, Set<LineItem> items) {
