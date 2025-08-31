@@ -2,9 +2,7 @@ package com.rafaelsousa.algashop.billing.domain.model.invoice;
 
 import com.rafaelsousa.algashop.billing.domain.model.ErrorMessages;
 import com.rafaelsousa.algashop.billing.domain.model.IdGenerator;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.OneToOne;
+import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.util.StringUtils;
 
@@ -13,13 +11,15 @@ import java.util.UUID;
 
 @Getter
 @Setter(AccessLevel.PRIVATE)
-@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
+@Entity
 public class PaymentSettings {
 
+    @Id
     @EqualsAndHashCode.Include
     private UUID id;
+
     private UUID creditCardId;
     private String gatewayCode;
 
@@ -57,5 +57,17 @@ public class PaymentSettings {
         }
 
         this.setGatewayCode(code);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        PaymentSettings that = (PaymentSettings) o;
+        return Objects.equals(id, that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(id);
     }
 }
