@@ -105,6 +105,10 @@ public class Invoice {
                     .formatted(this.getId(), this.getStatus().name().toLowerCase()));
         }
 
+        if (Objects.isNull(this.paymentSettings)) {
+            throw new DomainException(ErrorMessages.ERROR_INVOICE_HAS_NO_PAYMENT_SETTINGS.formatted(this.getId()));
+        }
+
         this.paymentSettings.assignGatewayCode(code);
     }
 
@@ -114,8 +118,8 @@ public class Invoice {
                     .formatted(this.getId(), this.getStatus().name().toLowerCase()));
         }
 
-        paymentSettings.setInvoice(this);
         this.setPaymentSettings(PaymentSettings.brandNew(paymentMethod, creditCardId));
+        paymentSettings.setInvoice(this);
     }
 
     public boolean isPaid() {
