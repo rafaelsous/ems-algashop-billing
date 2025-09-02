@@ -22,4 +22,5 @@ public class ErrorMessages {
     public static final String ERROR_LINE_ITEM_AMOUNT_MUST_BE_GREATER_THAN_ZERO = "Amount must be greater than zero";
     public static final String ERROR_PAYMENT_SETTINGS_GATEWAY_CODE_CANNOT_BE_EMPTY = "Gateway code cannot be empty";
     public static final String ERROR_PAYMENT_SETTINGS_GATEWAY_CODE_ALREADY_ASSIGNED = "Gateway code already assigned";
+    public static final String ERROR_INVOICE_ALREADY_EXISTS_FOR_ORDER = "Invoice already exists for order %s";
 }
