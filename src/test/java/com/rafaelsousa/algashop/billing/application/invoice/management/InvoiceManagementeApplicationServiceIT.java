@@ -5,9 +5,14 @@ import com.rafaelsousa.algashop.billing.domain.model.creditcard.CreditCardNotFou
 import com.rafaelsousa.algashop.billing.domain.model.creditcard.CreditCardRepository;
 import com.rafaelsousa.algashop.billing.domain.model.creditcard.CreditCardTestDataBuilder;
 import com.rafaelsousa.algashop.billing.domain.model.invoice.*;
+import com.rafaelsousa.algashop.billing.domain.model.invoice.payment.Payment;
+import com.rafaelsousa.algashop.billing.domain.model.invoice.payment.PaymentGatewayService;
+import com.rafaelsousa.algashop.billing.domain.model.invoice.payment.PaymentRequest;
+import com.rafaelsousa.algashop.billing.domain.model.invoice.payment.PaymentStatus;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,7 +20,8 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.verify;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
 @Transactional
 @SpringBootTest
@@ -26,6 +32,9 @@ class InvoiceManagementeApplicationServiceIT {
 
     @MockitoSpyBean
     private InvoiceService invoiceService;
+
+    @MockitoBean
+    private PaymentGatewayService paymentGatewayService;
 
     @Autowired
     InvoiceManagementeApplicationServiceIT(InvoiceRepository invoiceRepository, CreditCardRepository creditCardRepository,
@@ -111,5 +120,37 @@ class InvoiceManagementeApplicationServiceIT {
         IssueInvoiceInput invoiceInput = invoiceInputBuilder.build();
         assertThatThrownBy(() -> invoiceManagementeApplicationService.generate(invoiceInput))
                 .isInstanceOf(CreditCardNotFoundException.class);
+    }
+
+    @Test
+    void shouldProcessInvoicePayment() {
+        InvoiceTestDataBuilder invoiceTestDataBuilder = InvoiceTestDataBuilder.anInvoice();
+        Invoice invoice = invoiceTestDataBuilder
+                .paymentSettings(PaymentMethod.GATEWAY_BALANCE, null)
+                .build();
+        invoiceRepository.saveAndFlush(invoice);
+
+        UUID invoiceId = invoice.getId();
+        Payment payment = Payment.builder()
+                .gatewayCode("12345")
+                .status(PaymentStatus.PAID)
+                .method(invoice.getPaymentSettings().getMethod())
+                .invoiceId(invoiceId)
+                .build();
+
+        when(paymentGatewayService.capture(any(PaymentRequest.class))).thenReturn(payment);
+
+        invoiceManagementeApplicationService.processPayment(invoiceId);
+
+        Invoice paidInvoice = invoiceRepository.findById(invoiceId).orElseThrow();
+
+        assertThat(paidInvoice).satisfies(i -> {
+            assertThat(i.isPaid()).isTrue();
+            assertThat(i.getPaymentSettings().getMethod()).isEqualTo(PaymentMethod.GATEWAY_BALANCE);
+            assertThat(i.getPaymentSettings().getCreditCardId()).isNull();
+        });
+
+        verify(paymentGatewayService, times(1)).capture(any(PaymentRequest.class));
+        verify(invoiceService, times(1)).assignPayment(any(Invoice.class), any(Payment.class));
     }
 }

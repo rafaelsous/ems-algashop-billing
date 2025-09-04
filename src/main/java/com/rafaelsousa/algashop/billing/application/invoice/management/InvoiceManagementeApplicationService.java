@@ -4,13 +4,18 @@ import com.rafaelsousa.algashop.billing.domain.model.commons.Address;
 import com.rafaelsousa.algashop.billing.domain.model.creditcard.CreditCardNotFoundException;
 import com.rafaelsousa.algashop.billing.domain.model.creditcard.CreditCardRepository;
 import com.rafaelsousa.algashop.billing.domain.model.invoice.*;
+import com.rafaelsousa.algashop.billing.domain.model.invoice.payment.Payment;
 import com.rafaelsousa.algashop.billing.domain.model.invoice.payment.PaymentGatewayService;
+import com.rafaelsousa.algashop.billing.domain.model.invoice.payment.PaymentRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
+import java.util.LinkedHashSet;
+import java.util.Objects;
+import java.util.Set;
+import java.util.UUID;
 
 @Slf4j
 @Service
@@ -36,6 +41,40 @@ public class InvoiceManagementeApplicationService {
         invoiceRepository.saveAndFlush(invoice);
 
         return invoice.getId();
+    }
+
+    @Transactional
+    public void processPayment(UUID invoiceId) {
+        Invoice invoice = invoiceRepository.findById(invoiceId)
+                .orElseThrow(() -> new InvoiceNotFoundException(invoiceId));
+
+        PaymentRequest paymentRequest = toPaymentRequest(invoice);
+
+        Payment payment;
+        try {
+            payment = paymentGatewayService.capture(paymentRequest);
+        } catch (Exception ex) {
+            String errorMessage = "Payment capture failed for invoice %s".formatted(invoiceId);
+            log.error(errorMessage, ex);
+
+            invoice.cancel(errorMessage);
+            invoiceRepository.saveAndFlush(invoice);
+
+            return;
+        }
+
+        invoiceService.assignPayment(invoice, payment);
+        invoiceRepository.saveAndFlush(invoice);
+    }
+
+    private PaymentRequest toPaymentRequest(Invoice invoice) {
+        return PaymentRequest.builder()
+                .invoiceId(invoice.getId())
+                .payer(invoice.getPayer())
+                .method(invoice.getPaymentSettings().getMethod())
+                .amount(invoice.getTotalAmount())
+                .creditCardId(invoice.getPaymentSettings().getCreditCardId())
+                .build();
     }
 
     private Set<LineItem> convertToLineItems(Set<LineItemInput> itemInputs) {

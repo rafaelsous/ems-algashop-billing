@@ -11,6 +11,7 @@ public class ErrorMessages {
     public static final String ERROR_INVOICE_IS_ALREADY_CANCELED = "Invoice %s is already canceled";
     public static final String ERROR_INVOICE_CANNOT_BE_ASSIGNED_PAYMENT_GATEWAY_CODE = "Invoice %s with status %s cannot be assigned a payment gateway code";
     public static final String ERROR_INVOICE_HAS_NO_PAYMENT_SETTINGS = "Invoice %s has no payment settigns";
+    public static final String ERROR_INVOICE_NOT_FOUND = "Invoice %s not found";
 
     public static final String ERROR_CREDIT_CARD_LAST_NUMBERS_CANNOT_BE_EMPTY = "Last numbers cannot be empty";
     public static final String ERROR_CREDIT_CARD_BRAND_CANNOT_BE_EMPTY = "Brand cannot be empty";
