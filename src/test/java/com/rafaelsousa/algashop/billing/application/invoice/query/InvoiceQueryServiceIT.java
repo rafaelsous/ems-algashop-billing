@@ -37,7 +37,7 @@ class InvoiceQueryServiceIT {
         assertThat(invoiceOutput).satisfies(io -> {
             assertThat(io.getId()).isEqualTo(invoice.getId());
             assertThat(io.getOrderId()).isEqualTo(invoice.getOrderId());
-            assertThat(io.getCustomerId().toString()).hasToString(invoice.getCustomerId());
+            assertThat(io.getCustomerId()).isEqualTo(invoice.getCustomerId());
             assertThat(io.getTotalAmount()).isEqualTo(invoice.getTotalAmount());
         });
 

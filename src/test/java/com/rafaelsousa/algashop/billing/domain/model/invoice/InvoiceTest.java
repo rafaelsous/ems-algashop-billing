@@ -31,7 +31,7 @@ class InvoiceTest {
         assertThat(invoice).satisfies(i -> {
             assertThat(i.getId()).isNotNull();
             assertThat(i.getOrderId()).isNotBlank();
-            assertThat(i.getCustomerId()).isNotBlank();
+            assertThat(i.getCustomerId()).isNotNull();
             assertThat(i.getIssuedAt()).isNotNull();
             assertThat(i.getPaidAt()).isNull();
             assertThat(i.getCanceledAt()).isNull();

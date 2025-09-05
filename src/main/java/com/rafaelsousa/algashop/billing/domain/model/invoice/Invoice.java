@@ -1,6 +1,6 @@
 package com.rafaelsousa.algashop.billing.domain.model.invoice;
 
-import com.rafaelsousa.algashop.billing.domain.model.AbstractAuditableEntity;
+import com.rafaelsousa.algashop.billing.domain.model.AbstractAuditableAggregateRoot;
 import com.rafaelsousa.algashop.billing.domain.model.DomainException;
 import com.rafaelsousa.algashop.billing.domain.model.ErrorMessages;
 import com.rafaelsousa.algashop.billing.domain.model.IdGenerator;
@@ -17,13 +17,13 @@ import java.util.*;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
-public class Invoice extends AbstractAuditableEntity {
+public class Invoice extends AbstractAuditableAggregateRoot<Invoice> {
 
     @Id
     @EqualsAndHashCode.Include
     private UUID id;
     private String orderId;
-    private String customerId;
+    private UUID customerId;
     private OffsetDateTime issuedAt;
     private OffsetDateTime paidAt;
     private OffsetDateTime canceledAt;
@@ -59,10 +59,10 @@ public class Invoice extends AbstractAuditableEntity {
 
         BigDecimal totalAmount = items.stream().map(LineItem::getAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        return new Invoice(
+        Invoice invoice = new Invoice(
                 IdGenerator.generateTimeBasedUUID(),
                 orderId,
-                customerId.toString(),
+                customerId,
                 OffsetDateTime.now(),
                 null,
                 null,
@@ -74,6 +74,15 @@ public class Invoice extends AbstractAuditableEntity {
                 payer,
                 items
         );
+
+        invoice.registerEvent(InvoiceIssuedEvent.builder()
+                .invoiceId(invoice.getId())
+                .customerId(invoice.getCustomerId())
+                .orderId(invoice.getOrderId())
+                .issuedAt(invoice.getIssuedAt())
+                .build());
+
+        return invoice;
     }
 
     public Set<LineItem> getItems() {
@@ -88,6 +97,13 @@ public class Invoice extends AbstractAuditableEntity {
 
         setStatus(InvoiceStatus.PAID);
         setPaidAt(OffsetDateTime.now());
+
+        this.registerEvent(InvoicePaidEvent.builder()
+                .invoiceId(this.getId())
+                .customerId(this.getCustomerId())
+                .orderId(this.getOrderId())
+                .paidAt(this.getPaidAt())
+                .build());
     }
 
     public void cancel(String cancelReason) {
@@ -98,6 +114,13 @@ public class Invoice extends AbstractAuditableEntity {
         setCancelReason(cancelReason);
         setStatus(InvoiceStatus.CANCELED);
         setCanceledAt(OffsetDateTime.now());
+
+        this.registerEvent(InvoiceCanceledEvent.builder()
+                .invoiceId(this.getId())
+                .customerId(this.getCustomerId())
+                .orderId(this.getOrderId())
+                .canceledAt(this.getCanceledAt())
+                .build());
     }
 
     public void assignPaymentGatewayCode(String code) {
