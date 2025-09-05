@@ -1,5 +1,6 @@
 package com.rafaelsousa.algashop.billing.domain.model.invoice;
 
+import com.rafaelsousa.algashop.billing.domain.model.AbstractAuditableEntity;
 import com.rafaelsousa.algashop.billing.domain.model.DomainException;
 import com.rafaelsousa.algashop.billing.domain.model.ErrorMessages;
 import com.rafaelsousa.algashop.billing.domain.model.IdGenerator;
@@ -16,7 +17,7 @@ import java.util.*;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
-public class Invoice {
+public class Invoice extends AbstractAuditableEntity {
 
     @Id
     @EqualsAndHashCode.Include

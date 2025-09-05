@@ -71,6 +71,11 @@ class InvoiceManagementeApplicationServiceIT {
             assertThat(i.getPaymentSettings().getMethod()).isEqualTo(PaymentMethod.CREDIT_CARD);
             assertThat(i.getPaymentSettings().getCreditCardId()).isNotNull();
             assertThat(i.getPaymentSettings().getCreditCardId()).isEqualTo(creditCard.getId());
+            assertThat(i.getVersion()).isZero();
+            assertThat(i.getCreatedAt()).isNotNull();
+            assertThat(i.getCreatedByUserId()).isNotNull();
+            assertThat(i.getLastModifiedAt()).isNotNull();
+            assertThat(i.getLastModifiedByUserId()).isNotNull();
         });
 
         verify(invoiceService).issue(invoice.getOrderId(), customerId, invoice.getPayer(), invoice.getItems());
