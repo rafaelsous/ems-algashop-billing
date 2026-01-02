@@ -1,5 +1,6 @@
 package com.rafaelsousa.algashop.billing.domain.model.creditcard;
 
+import java.time.LocalDate;
 import java.util.UUID;
 
 public class CreditCardTestDataBuilder {
@@ -8,7 +9,7 @@ public class CreditCardTestDataBuilder {
     private String lastNumbers = "1234";
     private String brand = "Visa";
     private Integer expMonth = 12;
-    private Integer expYear = 2025;
+    private Integer expYear = LocalDate.now().plusYears(7).getYear();
     private String gatewayCreditCardCode = "12345";
 
     private CreditCardTestDataBuilder() {
