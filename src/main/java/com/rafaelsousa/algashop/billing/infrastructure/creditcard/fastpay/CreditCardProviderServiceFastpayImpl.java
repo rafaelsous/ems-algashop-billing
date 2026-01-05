@@ -5,8 +5,8 @@ import com.rafaelsousa.algashop.billing.domain.model.creditcard.LimitedCreditCar
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 
-import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -30,11 +30,15 @@ public class CreditCardProviderServiceFastpayImpl implements CreditCardProviderS
 
     @Override
     public Optional<LimitedCreditCard> findById(String gatewayCode) {
-        FastpayCreditCardResponse creditCardResponse = fastpayCreditCardApiClient.findyById(gatewayCode);
+        FastpayCreditCardResponse creditCardResponse;
 
-        return Objects.isNull(creditCardResponse)
-                ? Optional.empty()
-                : Optional.of(toLimitedCreditCard(creditCardResponse));
+        try {
+            creditCardResponse = fastpayCreditCardApiClient.findyById(gatewayCode);
+        } catch (HttpClientErrorException.NotFound ex) {
+            return Optional.empty();
+        }
+
+        return Optional.of(toLimitedCreditCard(creditCardResponse));
     }
 
     @Override
