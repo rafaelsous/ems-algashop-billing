@@ -1,0 +1,26 @@
+package com.rafaelsousa.algashop.billing.infrastructure.payment.fastpay;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.math.BigDecimal;
+
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class FastpayPaymentInput {
+    private BigDecimal totalAmount;
+    private FastpayPaymentMethod method;
+    private String fullName;
+    private String document;
+    private String phone;
+    private String addressLine1;
+    private String addressLine2;
+    private String creditCardId;
+    private String referenceCode;
+    private String replyToUrl;
+    private String zipCode;
+}
