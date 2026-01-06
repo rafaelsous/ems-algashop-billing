@@ -13,7 +13,7 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 public class FastpayPaymentInput {
     private BigDecimal totalAmount;
-    private FastpayPaymentMethod method;
+    private String method;
     private String fullName;
     private String document;
     private String phone;

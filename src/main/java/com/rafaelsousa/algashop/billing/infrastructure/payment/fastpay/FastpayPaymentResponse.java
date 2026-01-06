@@ -14,7 +14,7 @@ import java.math.BigDecimal;
 public class FastpayPaymentResponse {
     private String id;
     private BigDecimal totalAmount;
-    private FastpayPaymentStatus status;
+    private String status;
     private String method;
     private String referenceCode;
 }
