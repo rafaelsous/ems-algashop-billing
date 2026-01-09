@@ -7,6 +7,7 @@ import com.rafaelsousa.algashop.billing.domain.model.invoice.*;
 import com.rafaelsousa.algashop.billing.domain.model.invoice.payment.Payment;
 import com.rafaelsousa.algashop.billing.domain.model.invoice.payment.PaymentGatewayService;
 import com.rafaelsousa.algashop.billing.domain.model.invoice.payment.PaymentRequest;
+import com.rafaelsousa.algashop.billing.domain.model.invoice.payment.PaymentStatus;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -61,6 +62,15 @@ public class InvoiceManagementeApplicationService {
         }
 
         invoiceService.assignPayment(invoice, payment);
+        invoiceRepository.saveAndFlush(invoice);
+    }
+
+    @Transactional
+    public void updatePaymentStatus(UUID invoiceId, PaymentStatus paymentStatus) {
+        Invoice invoice = invoiceRepository.findById(invoiceId)
+                .orElseThrow(() -> new InvoiceNotFoundException(invoiceId));
+
+        invoice.updatePaymentStatus(paymentStatus);
         invoiceRepository.saveAndFlush(invoice);
     }
 

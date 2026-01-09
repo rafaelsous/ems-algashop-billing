@@ -10,6 +10,7 @@ import com.rafaelsousa.algashop.billing.domain.model.invoice.payment.Payment;
 import com.rafaelsousa.algashop.billing.domain.model.invoice.payment.PaymentGatewayService;
 import com.rafaelsousa.algashop.billing.domain.model.invoice.payment.PaymentRequest;
 import com.rafaelsousa.algashop.billing.domain.model.invoice.payment.PaymentStatus;
+import com.rafaelsousa.algashop.billing.infrastructure.payment.AlgaShopPaymentProperties;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
@@ -23,6 +24,7 @@ import java.util.UUID;
 public class PaymentGatewayServiceFastpayImpl implements PaymentGatewayService {
     private final FastpayPaymentApiClient fastpayPaymentApiClient;
     private final CreditCardRepository creditCardRepository;
+    private final AlgaShopPaymentProperties algaShopPaymentProperties;
 
     @Override
     public Payment capture(PaymentRequest request) {
@@ -51,7 +53,7 @@ public class PaymentGatewayServiceFastpayImpl implements PaymentGatewayService {
                 .addressLine1(address.getStreet().concat(", ").concat(address.getNumber()))
                 .addressLine2(address.getComplement())
                 .referenceCode(request.getInvoiceId().toString())
-                .replyToUrl("http://example.com/webhook")
+                .replyToUrl(algaShopPaymentProperties.getFastpay().getWebhookUrl())
                 .zipCode(address.getZipCode());
 
         if (Objects.requireNonNull(request.getMethod()) == PaymentMethod.CREDIT_CARD) {

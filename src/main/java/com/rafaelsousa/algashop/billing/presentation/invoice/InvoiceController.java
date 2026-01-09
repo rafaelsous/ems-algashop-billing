@@ -1,4 +1,4 @@
-package com.rafaelsousa.algashop.billing.presentation.creditcard.invoice;
+package com.rafaelsousa.algashop.billing.presentation.invoice;
 
 import com.rafaelsousa.algashop.billing.application.invoice.management.InvoiceManagementeApplicationService;
 import com.rafaelsousa.algashop.billing.application.invoice.management.IssueInvoiceInput;

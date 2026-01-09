@@ -4,6 +4,7 @@ import com.rafaelsousa.algashop.billing.domain.model.AbstractAuditableAggregateR
 import com.rafaelsousa.algashop.billing.domain.model.DomainException;
 import com.rafaelsousa.algashop.billing.domain.model.ErrorMessages;
 import com.rafaelsousa.algashop.billing.domain.model.IdGenerator;
+import com.rafaelsousa.algashop.billing.domain.model.invoice.payment.PaymentStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.util.StringUtils;
@@ -11,6 +12,8 @@ import org.springframework.util.StringUtils;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.*;
+
+import static com.rafaelsousa.algashop.billing.domain.model.invoice.InvoiceStatus.PAID;
 
 @Getter
 @Setter(AccessLevel.PRIVATE)
@@ -95,7 +98,7 @@ public class Invoice extends AbstractAuditableAggregateRoot<Invoice> {
                     .formatted(this.getId(), this.getStatus().name().toLowerCase()));
         }
 
-        setStatus(InvoiceStatus.PAID);
+        setStatus(PAID);
         setPaidAt(OffsetDateTime.now());
 
         this.registerEvent(InvoicePaidEvent.builder()
@@ -147,7 +150,7 @@ public class Invoice extends AbstractAuditableAggregateRoot<Invoice> {
     }
 
     public boolean isPaid() {
-        return InvoiceStatus.PAID.equals(this.getStatus());
+        return PAID.equals(this.getStatus());
     }
 
     public boolean isUnpaid() {
@@ -156,6 +159,16 @@ public class Invoice extends AbstractAuditableAggregateRoot<Invoice> {
 
     public boolean isCanceled() {
         return InvoiceStatus.CANCELED.equals(this.getStatus());
+    }
+
+    public void updatePaymentStatus(PaymentStatus status) {
+        if (Objects.requireNonNull(status) == PaymentStatus.FAILED) {
+            cancel("Payment failed");
+        } else if (status == PaymentStatus.REFUNDED) {
+            cancel("Payment refunded");
+        } else if (status == PaymentStatus.PAID) {
+            markAsPaid();
+        }
     }
 
     @Override
