@@ -4,8 +4,7 @@ import java.time.LocalDate;
 import java.util.UUID;
 
 public class CreditCardTestDataBuilder {
-
-    private UUID customerId = UUID.randomUUID();
+    private UUID customerId = UUID.fromString("6e148bd5-47f6-4022-b9da-07cfaa294f7a");
     private String lastNumbers = "1234";
     private String brand = "Visa";
     private Integer expMonth = 12;

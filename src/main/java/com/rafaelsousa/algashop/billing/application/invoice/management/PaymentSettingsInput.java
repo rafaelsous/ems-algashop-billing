@@ -1,6 +1,7 @@
 package com.rafaelsousa.algashop.billing.application.invoice.management;
 
 import com.rafaelsousa.algashop.billing.domain.model.invoice.PaymentMethod;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,6 +14,9 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PaymentSettingsInput {
+
+	@NotNull
 	private PaymentMethod method;
+
 	private UUID creditCardId;
 }

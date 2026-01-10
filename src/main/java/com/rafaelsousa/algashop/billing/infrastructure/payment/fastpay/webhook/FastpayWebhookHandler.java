@@ -1,6 +1,6 @@
 package com.rafaelsousa.algashop.billing.infrastructure.payment.fastpay.webhook;
 
-import com.rafaelsousa.algashop.billing.application.invoice.management.InvoiceManagementeApplicationService;
+import com.rafaelsousa.algashop.billing.application.invoice.management.InvoiceManagementApplicationService;
 import com.rafaelsousa.algashop.billing.infrastructure.payment.fastpay.FastpayEnumConverter;
 import com.rafaelsousa.algashop.billing.infrastructure.payment.fastpay.FastpayPaymentStatus;
 import lombok.RequiredArgsConstructor;
@@ -13,12 +13,12 @@ import java.util.UUID;
 @Component
 @RequiredArgsConstructor
 public class FastpayWebhookHandler {
-    private final InvoiceManagementeApplicationService invoiceManagementeApplicationService;
+    private final InvoiceManagementApplicationService invoiceManagementApplicationService;
 
     public void process(FastpayPaymentWebhookEvent event) {
         log.info("Processing webhook event {}", event);
 
-        invoiceManagementeApplicationService.updatePaymentStatus(
+        invoiceManagementApplicationService.updatePaymentStatus(
                 UUID.fromString(event.getReferenceCode()),
                 FastpayEnumConverter.convert(FastpayPaymentStatus.valueOf(event.getStatus()))
         );

@@ -1,6 +1,6 @@
 package com.rafaelsousa.algashop.billing.presentation.invoice;
 
-import com.rafaelsousa.algashop.billing.application.invoice.management.InvoiceManagementeApplicationService;
+import com.rafaelsousa.algashop.billing.application.invoice.management.InvoiceManagementApplicationService;
 import com.rafaelsousa.algashop.billing.application.invoice.management.IssueInvoiceInput;
 import com.rafaelsousa.algashop.billing.application.invoice.query.InvoiceOutput;
 import com.rafaelsousa.algashop.billing.application.invoice.query.InvoiceQueryService;
@@ -18,16 +18,16 @@ import java.util.UUID;
 @RequestMapping("/api/v1/orders/{orderId}/invoice")
 public class InvoiceController {
     private final InvoiceQueryService invoiceQueryService;
-    private final InvoiceManagementeApplicationService invoiceManagementeApplicationService;
+    private final InvoiceManagementApplicationService invoiceManagementApplicationService;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public InvoiceOutput issue(@PathVariable String orderId, @RequestBody @Valid IssueInvoiceInput input) {
         input.setOrderId(orderId);
-        UUID invoiceId = invoiceManagementeApplicationService.generate(input);
+        UUID invoiceId = invoiceManagementApplicationService.generate(input);
 
         try {
-            invoiceManagementeApplicationService.processPayment(invoiceId);
+            invoiceManagementApplicationService.processPayment(invoiceId);
         } catch (Exception ex) {
             log.error("Error when process payment for invoice {}", invoiceId, ex);
         }

@@ -43,7 +43,7 @@ class CreditCardProviderServiceFastpayImplIT extends AbstractFastpayIT {
     }
 
     @Test
-    void shoudRemoveCreditCard() {
+    void shouldRemoveCreditCard() {
         LimitedCreditCard limitedCreditCard = registerCard();
 
         assertDoesNotThrow(() -> creditCardProvider.delete(limitedCreditCard.getGatewayCode()));

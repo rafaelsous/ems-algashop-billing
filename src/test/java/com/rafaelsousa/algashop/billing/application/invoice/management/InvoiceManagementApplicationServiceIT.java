@@ -26,10 +26,10 @@ import static org.mockito.Mockito.*;
 
 @Transactional
 @SpringBootTest
-class InvoiceManagementeApplicationServiceIT {
+class InvoiceManagementApplicationServiceIT {
     private final InvoiceRepository invoiceRepository;
     private final CreditCardRepository creditCardRepository;
-    private final InvoiceManagementeApplicationService invoiceManagementeApplicationService;
+    private final InvoiceManagementApplicationService invoiceManagementApplicationService;
 
     @MockitoSpyBean
     private InvoiceService invoiceService;
@@ -41,11 +41,11 @@ class InvoiceManagementeApplicationServiceIT {
     private InvoiceEventListener invoiceEventListener;
 
     @Autowired
-    InvoiceManagementeApplicationServiceIT(InvoiceRepository invoiceRepository, CreditCardRepository creditCardRepository,
-                                           InvoiceManagementeApplicationService invoiceManagementeApplicationService) {
+    InvoiceManagementApplicationServiceIT(InvoiceRepository invoiceRepository, CreditCardRepository creditCardRepository,
+                                          InvoiceManagementApplicationService invoiceManagementApplicationService) {
         this.invoiceRepository = invoiceRepository;
         this.creditCardRepository = creditCardRepository;
-        this.invoiceManagementeApplicationService = invoiceManagementeApplicationService;
+        this.invoiceManagementApplicationService = invoiceManagementApplicationService;
     }
 
     @Test
@@ -64,7 +64,7 @@ class InvoiceManagementeApplicationServiceIT {
                                 .build()
                 );
 
-        UUID invoiceId = invoiceManagementeApplicationService.generate(invoiceInput.build());
+        UUID invoiceId = invoiceManagementApplicationService.generate(invoiceInput.build());
 
         Invoice invoice = invoiceRepository.findById(invoiceId).orElseThrow();
 
@@ -99,7 +99,7 @@ class InvoiceManagementeApplicationServiceIT {
                                 .build()
                 );
 
-        UUID invoiceId = invoiceManagementeApplicationService.generate(invoiceInput.build());
+        UUID invoiceId = invoiceManagementApplicationService.generate(invoiceInput.build());
 
         Invoice invoice = invoiceRepository.findById(invoiceId).orElseThrow();
 
@@ -129,7 +129,7 @@ class InvoiceManagementeApplicationServiceIT {
                 );
 
         IssueInvoiceInput invoiceInput = invoiceInputBuilder.build();
-        assertThatThrownBy(() -> invoiceManagementeApplicationService.generate(invoiceInput))
+        assertThatThrownBy(() -> invoiceManagementApplicationService.generate(invoiceInput))
                 .isInstanceOf(CreditCardNotFoundException.class);
     }
 
@@ -151,7 +151,7 @@ class InvoiceManagementeApplicationServiceIT {
 
         when(paymentGatewayService.capture(any(PaymentRequest.class))).thenReturn(payment);
 
-        invoiceManagementeApplicationService.processPayment(invoiceId);
+        invoiceManagementApplicationService.processPayment(invoiceId);
 
         Invoice paidInvoice = invoiceRepository.findById(invoiceId).orElseThrow();
 
@@ -184,7 +184,7 @@ class InvoiceManagementeApplicationServiceIT {
 
         when(paymentGatewayService.capture(any(PaymentRequest.class))).thenReturn(payment);
 
-        invoiceManagementeApplicationService.processPayment(invoiceId);
+        invoiceManagementApplicationService.processPayment(invoiceId);
 
         Invoice paidInvoice = invoiceRepository.findById(invoiceId).orElseThrow();
 
@@ -207,7 +207,7 @@ class InvoiceManagementeApplicationServiceIT {
 
         when(paymentGatewayService.capture(any(PaymentRequest.class))).thenThrow(new RuntimeException("Payment capture failed"));
 
-        invoiceManagementeApplicationService.processPayment(invoiceId);
+        invoiceManagementApplicationService.processPayment(invoiceId);
 
         Invoice paidInvoice = invoiceRepository.findById(invoiceId).orElseThrow();
 

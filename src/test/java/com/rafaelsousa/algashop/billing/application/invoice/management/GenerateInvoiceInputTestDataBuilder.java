@@ -1,5 +1,6 @@
 package com.rafaelsousa.algashop.billing.application.invoice.management;
 
+import com.rafaelsousa.algashop.billing.domain.model.creditcard.CreditCardTestDataBuilder;
 import com.rafaelsousa.algashop.billing.domain.model.invoice.PaymentMethod;
 
 import java.math.BigDecimal;
@@ -11,7 +12,7 @@ public class GenerateInvoiceInputTestDataBuilder {
     public static IssueInvoiceInput.IssueInvoiceInputBuilder anInput() {
         return IssueInvoiceInput.builder()
                 .orderId("ABC100")
-                .customerId(UUID.randomUUID())
+                .customerId(CreditCardTestDataBuilder.aCreditCard().build().getCustomerId())
                 .paymentSettings(PaymentSettingsInput.builder()
                         .method(PaymentMethod.CREDIT_CARD)
                         .creditCardId(UUID.randomUUID())

@@ -1,5 +1,6 @@
 package com.rafaelsousa.algashop.billing.application.invoice.management;
 
+import com.rafaelsousa.algashop.billing.domain.model.DomainException;
 import com.rafaelsousa.algashop.billing.domain.model.commons.Address;
 import com.rafaelsousa.algashop.billing.domain.model.creditcard.CreditCardNotFoundException;
 import com.rafaelsousa.algashop.billing.domain.model.creditcard.CreditCardRepository;
@@ -18,7 +19,7 @@ import java.util.*;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class InvoiceManagementeApplicationService {
+public class InvoiceManagementApplicationService {
     private final InvoiceService invoiceService;
     private final InvoiceRepository invoiceRepository;
     private final CreditCardRepository creditCardRepository;
@@ -27,7 +28,10 @@ public class InvoiceManagementeApplicationService {
     @Transactional
     public UUID generate(IssueInvoiceInput issueInvoiceInput) {
         PaymentSettingsInput paymentSettings = issueInvoiceInput.getPaymentSettings();
-        verifyCreditCartId(paymentSettings.getCreditCardId());
+
+        if (paymentSettings.getMethod().equals(PaymentMethod.CREDIT_CARD)) {
+            verifyCreditCartId(issueInvoiceInput.getCustomerId(), paymentSettings.getCreditCardId());
+        }
 
         Payer payer = convertToPayer(issueInvoiceInput.getPayer());
         Set<LineItem> items = convertToLineItems(issueInvoiceInput.getItems());
@@ -121,8 +125,12 @@ public class InvoiceManagementeApplicationService {
                 .build();
     }
 
-    private void verifyCreditCartId(UUID creditCardId) {
-        if (Objects.nonNull(creditCardId) && !creditCardRepository.existsById(creditCardId)) {
+    private void verifyCreditCartId(UUID customerId, UUID creditCardId) {
+        if (Objects.isNull(creditCardId)) {
+            throw new DomainException("Credit card ID is required");
+        }
+
+        if (!creditCardRepository.existsByIdAndCustomerId(creditCardId, customerId)) {
             throw new CreditCardNotFoundException(creditCardId);
         }
     }
