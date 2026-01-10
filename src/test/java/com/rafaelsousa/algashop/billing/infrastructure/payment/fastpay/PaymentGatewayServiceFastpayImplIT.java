@@ -9,6 +9,8 @@ import com.rafaelsousa.algashop.billing.domain.model.invoice.payment.Payment;
 import com.rafaelsousa.algashop.billing.domain.model.invoice.payment.PaymentRequest;
 import com.rafaelsousa.algashop.billing.infrastructure.AbstractFastpayIT;
 import com.rafaelsousa.algashop.billing.infrastructure.creditcard.fastpay.FastpayCreditCardTokenizationApiClientConfig;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -24,6 +26,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 @SpringBootTest
 @Import(FastpayCreditCardTokenizationApiClientConfig.class)
 class PaymentGatewayServiceFastpayImplIT extends AbstractFastpayIT {
+
+    @BeforeAll
+    static void setUp() {
+        startMock();
+    }
+
+    @AfterAll
+    static void after() {
+        stopMock();
+    }
 
     @Autowired
     private PaymentGatewayServiceFastpayImpl paymentGatewayServiceFastpay;
