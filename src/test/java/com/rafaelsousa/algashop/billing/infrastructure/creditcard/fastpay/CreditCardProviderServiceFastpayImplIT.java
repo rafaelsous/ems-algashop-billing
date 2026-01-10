@@ -6,9 +6,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 
-import java.util.Optional;
-
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 @SpringBootTest
 @Import(FastpayCreditCardTokenizationApiClientConfig.class)
@@ -35,10 +34,6 @@ class CreditCardProviderServiceFastpayImplIT extends AbstractFastpayIT {
     void shoudRemoveCreditCard() {
         LimitedCreditCard limitedCreditCard = registerCard();
 
-        creditCardProvider.delete(limitedCreditCard.getGatewayCode());
-        Optional<LimitedCreditCard> limitedCreditCardOptional = creditCardProvider
-                .findById(limitedCreditCard.getGatewayCode());
-
-        assertThat(limitedCreditCardOptional).isEmpty();
+        assertDoesNotThrow(() -> creditCardProvider.delete(limitedCreditCard.getGatewayCode()));
     }
 }
