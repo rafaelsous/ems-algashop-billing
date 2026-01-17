@@ -1,20 +1,17 @@
 package com.rafaelsousa.algashop.billing.application.invoice.query;
 
+import com.rafaelsousa.algashop.billing.application.AbstractApplicationIT;
 import com.rafaelsousa.algashop.billing.domain.model.ErrorMessages;
 import com.rafaelsousa.algashop.billing.domain.model.invoice.*;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-@Transactional
-@SpringBootTest
-class InvoiceQueryServiceIT {
+class InvoiceQueryServiceIT extends AbstractApplicationIT {
     private final InvoiceQueryService invoiceQueryService;
     private final InvoiceRepository invoiceRepository;
 

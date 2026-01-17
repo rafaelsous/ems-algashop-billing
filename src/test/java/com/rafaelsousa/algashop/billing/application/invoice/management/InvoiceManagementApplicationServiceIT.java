@@ -1,5 +1,6 @@
 package com.rafaelsousa.algashop.billing.application.invoice.management;
 
+import com.rafaelsousa.algashop.billing.application.AbstractApplicationIT;
 import com.rafaelsousa.algashop.billing.domain.model.creditcard.CreditCard;
 import com.rafaelsousa.algashop.billing.domain.model.creditcard.CreditCardNotFoundException;
 import com.rafaelsousa.algashop.billing.domain.model.creditcard.CreditCardRepository;
@@ -12,10 +13,8 @@ import com.rafaelsousa.algashop.billing.domain.model.invoice.payment.PaymentStat
 import com.rafaelsousa.algashop.billing.infrastructure.listeners.InvoiceEventListener;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
@@ -24,9 +23,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-@Transactional
-@SpringBootTest
-class InvoiceManagementApplicationServiceIT {
+class InvoiceManagementApplicationServiceIT extends AbstractApplicationIT {
     private final InvoiceRepository invoiceRepository;
     private final CreditCardRepository creditCardRepository;
     private final InvoiceManagementApplicationService invoiceManagementApplicationService;

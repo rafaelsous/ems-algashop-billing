@@ -1,5 +1,6 @@
 package com.rafaelsousa.algashop.billing.infrastructure.creditcard.fastpay;
 
+import com.rafaelsousa.algashop.billing.config.TestcontainerPostgreSQLConfig;
 import com.rafaelsousa.algashop.billing.domain.model.creditcard.LimitedCreditCard;
 import com.rafaelsousa.algashop.billing.infrastructure.AbstractFastpayIT;
 import org.junit.jupiter.api.AfterAll;
@@ -12,7 +13,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 @SpringBootTest
-@Import(FastpayCreditCardTokenizationApiClientConfig.class)
+@Import({FastpayCreditCardTokenizationApiClientConfig.class, TestcontainerPostgreSQLConfig.class})
 class CreditCardProviderServiceFastpayImplIT extends AbstractFastpayIT {
 
     @BeforeAll
