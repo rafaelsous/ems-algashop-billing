@@ -4,6 +4,7 @@ import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.common.ClasspathFileSource;
 import com.github.tomakehurst.wiremock.extension.responsetemplating.ResponseTemplateTransformer;
 import com.github.tomakehurst.wiremock.extension.responsetemplating.TemplateEngine;
+import com.rafaelsousa.algashop.billing.config.TestcontainerPostgreSQLConfig;
 import com.rafaelsousa.algashop.billing.domain.model.creditcard.LimitedCreditCard;
 import com.rafaelsousa.algashop.billing.infrastructure.creditcard.fastpay.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +16,7 @@ import java.util.UUID;
 
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
 
-@Import(FastpayCreditCardTokenizationApiClientConfig.class)
+@Import({FastpayCreditCardTokenizationApiClientConfig.class, TestcontainerPostgreSQLConfig.class})
 public abstract class AbstractFastpayIT {
 
     @Autowired

@@ -1,6 +1,5 @@
 package com.rafaelsousa.algashop.billing.infrastructure.payment.fastpay;
 
-import com.rafaelsousa.algashop.billing.config.TestcontainerPostgreSQLConfig;
 import com.rafaelsousa.algashop.billing.domain.model.creditcard.CreditCard;
 import com.rafaelsousa.algashop.billing.domain.model.creditcard.CreditCardRepository;
 import com.rafaelsousa.algashop.billing.domain.model.creditcard.LimitedCreditCard;
@@ -25,7 +24,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @Transactional
 @SpringBootTest
-@Import({FastpayCreditCardTokenizationApiClientConfig.class, TestcontainerPostgreSQLConfig.class})
+@Import(FastpayCreditCardTokenizationApiClientConfig.class)
 class PaymentGatewayServiceFastpayImplIT extends AbstractFastpayIT {
 
     @BeforeAll
