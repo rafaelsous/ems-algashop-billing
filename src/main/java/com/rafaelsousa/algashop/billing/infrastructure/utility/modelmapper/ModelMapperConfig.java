@@ -1,5 +1,6 @@
 package com.rafaelsousa.algashop.billing.infrastructure.utility.modelmapper;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rafaelsousa.algashop.billing.application.utility.Mapper;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
@@ -17,6 +18,11 @@ public class ModelMapperConfig {
 
         return modelMapper::map;
     }
+
+	@Bean
+	public ObjectMapper objectMapper() {
+		return new ObjectMapper();
+	}
 
     private void configuration(ModelMapper modelMapper) {
         modelMapper.getConfiguration()
