@@ -11,13 +11,9 @@ import com.rafaelsousa.algashop.billing.domain.model.invoice.payment.PaymentGate
 import com.rafaelsousa.algashop.billing.domain.model.invoice.payment.PaymentRequest;
 import com.rafaelsousa.algashop.billing.domain.model.invoice.payment.PaymentStatus;
 import com.rafaelsousa.algashop.billing.infrastructure.payment.AlgaShopPaymentProperties;
-import com.rafaelsousa.algashop.billing.presentation.BadGatewayException;
-import com.rafaelsousa.algashop.billing.presentation.GatewayTimeoutException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.ResourceAccessException;
 
 import java.util.Objects;
 import java.util.UUID;
@@ -26,36 +22,21 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @ConditionalOnProperty(name = "algashop.integrations.payment.provider", havingValue = "FASTPAY")
 public class PaymentGatewayServiceFastpayImpl implements PaymentGatewayService {
-    private final FastpayPaymentApiClient fastpayPaymentApiClient;
+    private final ResilientFastpayPaymentApiClient fastpayPaymentApiClient;
     private final CreditCardRepository creditCardRepository;
     private final AlgaShopPaymentProperties algaShopPaymentProperties;
 
     @Override
     public Payment capture(PaymentRequest request) {
         FastpayPaymentInput input = convertToInput(request);
-        FastpayPaymentResponse response;
-
-        try {
-            response = fastpayPaymentApiClient.capture(input);
-        } catch (ResourceAccessException ex) {
-            throw new GatewayTimeoutException("Fastpay API Timeout", ex);
-        } catch (HttpClientErrorException ex) {
-            throw new BadGatewayException("Fastpay API Bad Gateway");
-        }
+        FastpayPaymentResponse response = fastpayPaymentApiClient.capture(input);
 
         return convertToPayment(response);
     }
 
     @Override
     public Payment findByCode(String gatewayCode) {
-        FastpayPaymentResponse response;
-        try {
-            response = fastpayPaymentApiClient.findById(gatewayCode);
-        } catch (ResourceAccessException ex) {
-            throw new GatewayTimeoutException("Fastpay API Timeout", ex);
-        } catch (HttpClientErrorException ex) {
-            throw new BadGatewayException("Fastpay API Bad Gateway");
-        }
+        FastpayPaymentResponse response = fastpayPaymentApiClient.findByCode(gatewayCode);
 
         return convertToPayment(response);
     }
@@ -97,14 +78,14 @@ public class PaymentGatewayServiceFastpayImpl implements PaymentGatewayService {
         try {
             fastpayPaymentMethod = FastpayPaymentMethod.valueOf(response.getMethod());
         } catch (Exception ex) {
-            throw new IllegalArgumentException("Unknown payment method: " + response.getMethod());
+            throw new IllegalArgumentException("Unknown payment method: " + response.getMethod(), ex);
         }
 
         FastpayPaymentStatus fastpayPaymentStatus;
         try {
             fastpayPaymentStatus = FastpayPaymentStatus.valueOf(response.getStatus());
         } catch (Exception ex) {
-            throw new IllegalArgumentException("Unknown payment status: " + response.getStatus());
+            throw new IllegalArgumentException("Unknown payment status: " + response.getStatus(), ex);
         }
 
         PaymentMethod paymentMethod = FastpayEnumConverter.convert(fastpayPaymentMethod);
