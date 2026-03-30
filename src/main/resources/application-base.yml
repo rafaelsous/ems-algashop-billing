@@ -10,6 +10,11 @@ spring:
   flyway:
     enabled: false
     locations: classpath:db/migration
+  cloud:
+    discovery:
+      client:
+        composite-indicator:
+          enabled: false
 
 algashop:
   integrations:
@@ -19,3 +24,22 @@ algashop:
         hostname: http://localhost:9995
         private-token: SSEewtC6Ps5yJLdB6SJmh1bqJXgRbCdf8ocDj2hU
         webhook-url: http://host.docker.internal:8082/api/v1/webhooks/fastpay
+
+management:
+  info:
+    env.enable: true
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
+      group:
+        readiness:
+          include: db,readinessState
+      status:
+        order: "DOWN, OUT_OF_SERVICE, UNKNOWN, DEGRADED, UP"
+
+info:
+  app.name: AlgaShop Billing API
