@@ -13,9 +13,11 @@ import org.springframework.core.retry.RetryPolicy;
 
 @Configuration
 public class SpringCircuitBreakerConfig {
+	public static final String FASTPAY_PAYMENT_API_CB_ID = "fastpayPaymentAPICB";
 
 	@Bean
 	public Customizer<FrameworkRetryCircuitBreakerFactory> defaultCustomizer() {
+
         RetryPolicy retryPolicy = RetryPolicy.builder()
 		        .maxRetries(3)
 		        .multiplier(2)
@@ -28,7 +30,7 @@ public class SpringCircuitBreakerConfig {
 			    .retryPolicy(retryPolicy)
 			    .openTimeout(Duration.ofSeconds(30))
 			    .resetTimeout(Duration.ofSeconds(60))
-			    .build(), "fastpayPaymentAPICB"
+			    .build(), FASTPAY_PAYMENT_API_CB_ID
 	    );
 	}
 }
