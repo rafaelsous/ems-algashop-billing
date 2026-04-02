@@ -38,7 +38,7 @@ public class ResilientFastpayPaymentApiClient {
 			return circuitBreaker.run(() -> {
 				try {
 					return processCapture(fastpayPaymentInput);
-				} catch (RestClientException ex) {
+				} catch (GatewayTimeoutException | BadGatewayException ex) {
 					throw new FastpayPaymentCaptureFailed("Fail to capture payment of reference code %s"
 							.formatted(fastpayPaymentInput.getReferenceCode()), ex);
 				}
