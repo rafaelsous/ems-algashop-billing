@@ -4,13 +4,14 @@ import com.rafaelsousa.algashop.billing.application.invoice.management.InvoiceMa
 import com.rafaelsousa.algashop.billing.application.invoice.management.IssueInvoiceInput;
 import com.rafaelsousa.algashop.billing.application.invoice.query.InvoiceOutput;
 import com.rafaelsousa.algashop.billing.application.invoice.query.InvoiceQueryService;
+import com.rafaelsousa.algashop.billing.infrastructure.security.SecurityAnnotations.CanReadInvoices;
+import com.rafaelsousa.algashop.billing.infrastructure.security.SecurityAnnotations.CanWriteInvoices;
 import jakarta.validation.Valid;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.UUID;
 
 @Slf4j
 @RestController
@@ -22,6 +23,7 @@ public class InvoiceController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
+    @CanWriteInvoices
     public InvoiceOutput issue(@PathVariable String orderId, @RequestBody @Valid IssueInvoiceInput input) {
         input.setOrderId(orderId);
         UUID invoiceId = invoiceManagementApplicationService.generate(input);
@@ -36,6 +38,7 @@ public class InvoiceController {
     }
 
     @GetMapping
+    @CanReadInvoices
     public InvoiceOutput findByOrderId(@PathVariable String orderId) {
         return invoiceQueryService.findByOrderId(orderId);
     }
