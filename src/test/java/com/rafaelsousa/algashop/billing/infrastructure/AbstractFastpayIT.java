@@ -9,6 +9,8 @@ import com.rafaelsousa.algashop.billing.domain.model.creditcard.LimitedCreditCar
 import com.rafaelsousa.algashop.billing.infrastructure.creditcard.fastpay.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.time.Year;
 import java.util.Collections;
@@ -24,6 +26,9 @@ public abstract class AbstractFastpayIT {
 
     @Autowired
     protected CreditCardProviderServiceFastpayImpl creditCardProvider;
+
+    @MockitoBean
+    private JwtDecoder jwtDecoder;
 
     protected static final UUID VALID_CUSTOMER_ID = UUID.randomUUID();
     protected static final String ALWASYS_PAID_CARD_NUMBER = "4622943127011022";
