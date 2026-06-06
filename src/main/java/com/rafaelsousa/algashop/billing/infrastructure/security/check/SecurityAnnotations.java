@@ -1,4 +1,4 @@
-package com.rafaelsousa.algashop.billing.infrastructure.security;
+package com.rafaelsousa.algashop.billing.infrastructure.security.check;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

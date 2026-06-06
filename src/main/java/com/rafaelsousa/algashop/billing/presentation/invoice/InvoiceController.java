@@ -4,8 +4,8 @@ import com.rafaelsousa.algashop.billing.application.invoice.management.InvoiceMa
 import com.rafaelsousa.algashop.billing.application.invoice.management.IssueInvoiceInput;
 import com.rafaelsousa.algashop.billing.application.invoice.query.InvoiceOutput;
 import com.rafaelsousa.algashop.billing.application.invoice.query.InvoiceQueryService;
-import com.rafaelsousa.algashop.billing.infrastructure.security.SecurityAnnotations.CanReadInvoices;
-import com.rafaelsousa.algashop.billing.infrastructure.security.SecurityAnnotations.CanWriteInvoices;
+import com.rafaelsousa.algashop.billing.infrastructure.security.check.SecurityAnnotations.CanReadInvoices;
+import com.rafaelsousa.algashop.billing.infrastructure.security.check.SecurityAnnotations.CanWriteInvoices;
 import jakarta.validation.Valid;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;

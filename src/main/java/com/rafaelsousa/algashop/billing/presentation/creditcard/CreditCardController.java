@@ -4,8 +4,8 @@ import com.rafaelsousa.algashop.billing.application.creditcard.management.Credit
 import com.rafaelsousa.algashop.billing.application.creditcard.management.TokenizedCreditCardInput;
 import com.rafaelsousa.algashop.billing.application.creditcard.query.CreditCardOutput;
 import com.rafaelsousa.algashop.billing.application.creditcard.query.CreditCardQueryService;
-import com.rafaelsousa.algashop.billing.infrastructure.security.SecurityAnnotations.CanReadCreditCards;
-import com.rafaelsousa.algashop.billing.infrastructure.security.SecurityAnnotations.CanWriteCreditCards;
+import com.rafaelsousa.algashop.billing.infrastructure.security.check.SecurityAnnotations.CanReadCreditCards;
+import com.rafaelsousa.algashop.billing.infrastructure.security.check.SecurityAnnotations.CanWriteCreditCards;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
