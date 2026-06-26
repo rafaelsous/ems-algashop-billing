@@ -51,6 +51,9 @@ class InvoiceManagementApplicationServiceIT extends AbstractApplicationIT {
         CreditCard creditCard = CreditCardTestDataBuilder.aCreditCard().customerId(customerId).build();
         creditCardRepository.saveAndFlush(creditCard);
 
+        when(securityChecks.getAuthenticatedUserId()).thenReturn(customerId);
+        when(securityChecks.isAuthenticated()).thenReturn(true);
+
         IssueInvoiceInput.IssueInvoiceInputBuilder invoiceInput = GenerateInvoiceInputTestDataBuilder.anInput();
         invoiceInput
                 .customerId(customerId)

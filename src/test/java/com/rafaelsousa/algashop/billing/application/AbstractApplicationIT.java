@@ -1,5 +1,6 @@
 package com.rafaelsousa.algashop.billing.application;
 
+import com.rafaelsousa.algashop.billing.application.security.SecurityChecks;
 import com.rafaelsousa.algashop.billing.config.TestcontainerPostgreSQLConfig;
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -16,4 +17,7 @@ public abstract class AbstractApplicationIT {
 
     @MockitoBean
     private JwtDecoder jwtDecoder;
+
+    @MockitoBean
+    protected SecurityChecks securityChecks;
 }
