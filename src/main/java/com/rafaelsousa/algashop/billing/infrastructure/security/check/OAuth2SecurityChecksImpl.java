@@ -1,6 +1,6 @@
 package com.rafaelsousa.algashop.billing.infrastructure.security.check;
 
-import com.rafaelsousa.algashop.billing.application.security.SecurityCheckApplicationService;
+import com.rafaelsousa.algashop.billing.application.security.SecurityChecks;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.security.access.AccessDeniedException;
@@ -12,8 +12,8 @@ import org.springframework.stereotype.Service;
 import java.util.UUID;
 
 @Slf4j
-@Service("securityCheck")
-public class OAuth2SecurityCheckApplicationServiceImpl implements SecurityCheckApplicationService {
+@Service("securityChecks")
+public class OAuth2SecurityChecksImpl implements SecurityChecks {
 
     @Override
     public UUID getAuthenticatedUserId() {
