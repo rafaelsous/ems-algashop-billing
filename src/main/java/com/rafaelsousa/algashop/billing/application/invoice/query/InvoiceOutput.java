@@ -2,6 +2,7 @@ package com.rafaelsousa.algashop.billing.application.invoice.query;
 
 import com.rafaelsousa.algashop.billing.application.invoice.management.PayerData;
 import com.rafaelsousa.algashop.billing.domain.model.invoice.InvoiceStatus;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -9,6 +10,7 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Data
@@ -27,4 +29,5 @@ public class InvoiceOutput {
     private InvoiceStatus status;
     private PayerData payer;
     private PaymentSettingsOutput paymentSettings;
+    private List<LineItemOutput> items;
 }

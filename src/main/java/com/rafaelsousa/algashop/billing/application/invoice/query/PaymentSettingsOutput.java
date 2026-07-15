@@ -16,4 +16,5 @@ public class PaymentSettingsOutput {
     private UUID id;
     private UUID creditCardId;
     private PaymentMethod method;
+    private String gatewayCode;
 }
