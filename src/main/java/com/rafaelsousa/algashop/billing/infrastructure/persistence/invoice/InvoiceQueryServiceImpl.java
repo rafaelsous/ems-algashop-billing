@@ -34,7 +34,7 @@ public class InvoiceQueryServiceImpl implements InvoiceQueryService {
         Invoice invoice =
                 invoiceRepository
                         .findByOrderIdAndCustomerId(orderId, customerId)
-                        .orElseThrow(InvoiceNotFoundException::new);
+                        .orElseThrow(() -> new InvoiceNotFoundException(orderId));
 
         return mapper.convert(invoice, InvoiceOutput.class);
     }
