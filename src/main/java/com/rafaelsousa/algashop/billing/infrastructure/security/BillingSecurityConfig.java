@@ -25,7 +25,7 @@ public class BillingSecurityConfig {
                                         SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(
                         auth ->
-                                auth.requestMatchers("/actuator/health/**", "/api/v1/webhooks/**")
+                                auth.requestMatchers("/actuator/health/**", "/actuator/info/**", "/api/v1/webhooks/**")
                                         .permitAll()
                                         .anyRequest()
                                         .authenticated())
