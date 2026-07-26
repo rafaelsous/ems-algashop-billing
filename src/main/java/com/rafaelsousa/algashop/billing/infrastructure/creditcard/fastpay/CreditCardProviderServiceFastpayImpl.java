@@ -10,6 +10,7 @@ import com.rafaelsousa.algashop.billing.presentation.ExternalApiErrorResponse;
 import com.rafaelsousa.algashop.billing.presentation.GatewayTimeoutException;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
@@ -18,6 +19,7 @@ import org.springframework.web.client.ResourceAccessException;
 import java.util.Optional;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @ConditionalOnProperty(name = "algashop.integrations.payment.provider", havingValue = "FASTPAY")
@@ -72,8 +74,8 @@ public class CreditCardProviderServiceFastpayImpl implements CreditCardProviderS
             fastpayCreditCardApiClient.delete(gatewayCode);
         } catch (ResourceAccessException ex) {
             throw new GatewayTimeoutException("Fastpay API Timeout", ex);
-        } catch (HttpClientErrorException ex) {
-            throw new BadGatewayException("Fastpay API Bad Gateway");
+        } catch (HttpClientErrorException.NotFound ex) {
+            log.error("Credit card not found when tried to delete", ex);
         }
     }
 
