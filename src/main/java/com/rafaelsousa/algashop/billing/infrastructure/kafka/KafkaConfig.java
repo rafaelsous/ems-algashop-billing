@@ -1,0 +1,110 @@
+package com.rafaelsousa.algashop.billing.infrastructure.kafka;
+
+import com.rafaelsousa.algashop.billing.domain.model.DomainEntityNotFoundException;
+import com.rafaelsousa.algashop.billing.domain.model.DomainException;
+import jakarta.validation.ConstraintViolationException;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+import org.apache.kafka.clients.admin.NewTopic;
+import org.apache.kafka.common.TopicPartition;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.kafka.config.TopicBuilder;
+import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.listener.DeadLetterPublishingRecoverer;
+import org.springframework.kafka.listener.DefaultErrorHandler;
+import org.springframework.util.backoff.ExponentialBackOff;
+
+import java.time.Duration;
+import java.util.Map;
+
+@Slf4j
+@Configuration
+@RequiredArgsConstructor
+public class KafkaConfig {
+    public static final String TYPE_ID_HEADER = "__TypeId__";
+    public static final String MIN_INSYNC_REPLICAS_CONFIG = "min.insync.replicas";
+
+    private static final String DLT_PREFIX = "billing.dlt.";
+    private static final int PARTITIONS_NUMBER = 3;
+    private static final int REPLICAS_NUMBER = 3;
+    private static final String RETENTION_IN_MILLIS =
+            String.valueOf(Duration.ofDays(30).toMillis());
+
+    private final AlgaShopMessagingKafkaProperties algaShopMessagingKafkaProperties;
+
+    @Bean
+    public DefaultErrorHandler defaultErrorHandler(DeadLetterPublishingRecoverer recoverer) {
+        long interval = 2000L; // 2s entre as tentativas
+        double multiplier = 2;
+        long maxRetries = 3L; // máximo de 2 tentativas
+        long maxInterval = 8000L;
+
+        ExponentialBackOff exponentialBackOff = new ExponentialBackOff(interval, multiplier);
+        exponentialBackOff.setMaxInterval(maxInterval);
+        exponentialBackOff.setMaxAttempts(maxRetries);
+
+        DefaultErrorHandler defaultErrorHandler =
+                new DefaultErrorHandler(recoverer, exponentialBackOff);
+        defaultErrorHandler.addNotRetryableExceptions(
+                DomainException.class,
+                DomainEntityNotFoundException.class,
+                ConstraintViolationException.class,
+                DataIntegrityViolationException.class,
+                IllegalArgumentException.class);
+
+        return defaultErrorHandler;
+    }
+
+    @Bean
+    public DeadLetterPublishingRecoverer deadLetterPublishingRecoverer(
+            KafkaTemplate<String, Object> kafkaTemplate,
+            AlgaShopMessagingKafkaProperties properties) {
+        DeadLetterPublishingRecoverer recoverer =
+                new DeadLetterPublishingRecoverer(
+                        kafkaTemplate,
+                        (consumerRecord, _) -> {
+                            String dltTopic = DLT_PREFIX + consumerRecord.topic();
+                            return new TopicPartition(dltTopic, consumerRecord.partition());
+                        });
+
+        recoverer.setLogRecoveryRecord(true);
+        recoverer.setFailIfSendResultIsError(false);
+
+        return recoverer;
+    }
+
+    @Bean
+    public NewTopic invoiceEventTopic() {
+        return TopicBuilder.name(algaShopMessagingKafkaProperties.getInvoiceEventTopicName())
+                .partitions(PARTITIONS_NUMBER)
+                .replicas(REPLICAS_NUMBER)
+                .configs(Map.of(MIN_INSYNC_REPLICAS_CONFIG, "2"))
+                .build();
+    }
+
+    @Bean
+    public NewTopic orderEventsDlt(AlgaShopMessagingKafkaProperties properties) {
+        return createDeadLetterTopic(properties.getOrderEventTopicName());
+    }
+
+    @Bean
+    public NewTopic invoiceEventsDlt(AlgaShopMessagingKafkaProperties properties) {
+        return createDeadLetterTopic(properties.getInvoiceEventTopicName());
+    }
+
+    private NewTopic createDeadLetterTopic(String originTopicName) {
+        return TopicBuilder.name(DLT_PREFIX + originTopicName)
+                .partitions(PARTITIONS_NUMBER)
+                .replicas(REPLICAS_NUMBER)
+                .configs(
+                        Map.of(
+                                MIN_INSYNC_REPLICAS_CONFIG,
+                                "2",
+                                "retention.ms",
+                                RETENTION_IN_MILLIS))
+                .build();
+    }
+}

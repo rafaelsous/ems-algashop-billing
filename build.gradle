@@ -63,6 +63,7 @@ dependencies {
     implementation 'io.awspring.cloud:spring-cloud-aws-starter-parameter-store'
     implementation platform("io.awspring.cloud:spring-cloud-aws-dependencies:${springCloudAwsVersion}")
     implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
+    implementation 'org.springframework.boot:spring-boot-starter-kafka'
 
     runtimeOnly 'org.postgresql:postgresql'
     compileOnly 'org.projectlombok:lombok'
@@ -78,6 +79,7 @@ dependencies {
     testImplementation 'org.testcontainers:testcontainers-junit-jupiter'
     testImplementation 'org.testcontainers:testcontainers-postgresql'
     testImplementation 'org.springframework.boot:spring-boot-starter-security-oauth2-resource-server-test'
+    testImplementation 'org.springframework.boot:spring-boot-starter-kafka-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     testCompileOnly 'org.projectlombok:lombok'
     testAnnotationProcessor 'org.projectlombok:lombok'
