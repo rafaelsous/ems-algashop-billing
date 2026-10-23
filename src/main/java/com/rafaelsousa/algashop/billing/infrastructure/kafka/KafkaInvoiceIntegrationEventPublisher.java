@@ -1,0 +1,56 @@
+package com.rafaelsousa.algashop.billing.infrastructure.kafka;
+
+import com.rafaelsousa.algashop.billing.application.EventPublishingException;
+import com.rafaelsousa.algashop.billing.application.IntegrationEvent;
+import com.rafaelsousa.algashop.billing.application.invoice.event.InvoiceIntegrationEventPublisher;
+import com.rafaelsousa.algashop.billing.infrastructure.utility.BeanValidationUtil;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.clients.producer.RecordMetadata;
+import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.support.SendResult;
+import org.springframework.stereotype.Component;
+
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+
+@Slf4j
+@Component
+@RequiredArgsConstructor
+public class KafkaInvoiceIntegrationEventPublisher implements InvoiceIntegrationEventPublisher {
+	private final BeanValidationUtil beanValidationUtil;
+	private final KafkaTemplate<String, Object> kafkaTemplate;
+	private final AlgaShopMessagingKafkaProperties properties;
+
+	@Override
+    public void send(IntegrationEvent event) {
+		beanValidationUtil.validate(event);
+
+		SendResult<String, Object> result;
+		try {
+			ProducerRecord<String, Object> producerRecord = new ProducerRecord<>(properties.getInvoiceEventTopicName(), event.getAggregateId(), event);
+
+			if (event.getIdempotencyKey() != null) {
+				producerRecord.headers().add(KafkaConfig.IDEMPOTENCY_KEY_HEADER, event.getIdempotencyKey().toString().getBytes());
+			}
+
+			result = kafkaTemplate.send(producerRecord).get(40, TimeUnit.SECONDS);
+		} catch (InterruptedException ex) {
+			Thread.currentThread().interrupt();
+			throw new EventPublishingException("Interrupted while publishing", event, ex);
+		} catch (TimeoutException | ExecutionException ex) {
+			throw new EventPublishingException("Failed to publish event", event, ex);
+		}
+
+		RecordMetadata metadata = result.getRecordMetadata();
+
+		log.info(
+			"Published {} to {}-{} at offset {}",
+			event.getClass().getSimpleName(),
+			metadata.topic(),
+			metadata.partition(),
+			metadata.offset());
+	}
+}

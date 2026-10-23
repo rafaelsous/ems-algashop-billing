@@ -26,6 +26,7 @@ import java.util.Map;
 public class KafkaConfig {
     public static final String TYPE_ID_HEADER = "__TypeId__";
     public static final String MIN_INSYNC_REPLICAS_CONFIG = "min.insync.replicas";
+    public static final String IDEMPOTENCY_KEY_HEADER = "idempotency-key";
 
     private static final String DLT_PREFIX = "billing.dlt.";
     private static final int PARTITIONS_NUMBER = 3;
