@@ -1,9 +1,11 @@
 package com.rafaelsousa.algashop.billing.infrastructure.security.check;
 
 import com.rafaelsousa.algashop.billing.application.security.SecurityChecks;
+
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -21,25 +23,28 @@ public class OAuth2SecurityChecksImpl implements SecurityChecks {
             throw new AccessDeniedException("Machine users do not have user ID");
         }
 
+        if (isAnonymous()) {
+            throw new AccessDeniedException("Anonymous users do not have user ID");
+        }
+
         Jwt jwt = getJwt();
 
-
-	    try {
-		    return UUID.fromString(jwt.getSubject());
-	    } catch (IllegalArgumentException ex) {
+        try {
+            return UUID.fromString(jwt.getSubject());
+        } catch (IllegalArgumentException ex) {
             log.error("Invalid user ID in JWT subject: {}", jwt.getSubject(), ex);
             throw new AccessDeniedException("Invalid user ID in JWT subject");
-	    }
+        }
     }
 
     @Override
     public boolean isAuthenticated() {
-	    try {
-		    return getAuthentication().isAuthenticated();
-	    } catch (IllegalStateException ex) {
+        try {
+            return getAuthentication().isAuthenticated();
+        } catch (IllegalStateException ex) {
             log.debug(ex.getMessage(), ex);
-		    return false;
-	    }
+            return false;
+        }
     }
 
     @Override
@@ -47,13 +52,18 @@ public class OAuth2SecurityChecksImpl implements SecurityChecks {
         Jwt jwt;
 
         try {
-		    jwt = getJwt();
+            jwt = getJwt();
         } catch (IllegalStateException ex) {
             log.debug(ex.getMessage(), ex);
             return false;
         }
 
         return jwt.getAudience().contains(jwt.getSubject());
+    }
+
+    @Override
+    public boolean isAnonymous() {
+        return getAuthentication() instanceof AnonymousAuthenticationToken;
     }
 
     private Authentication getAuthentication() {

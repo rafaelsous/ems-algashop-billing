@@ -2,12 +2,15 @@ package com.rafaelsousa.algashop.billing.infrastructure.listeners;
 
 import com.rafaelsousa.algashop.billing.application.invoice.event.InvoiceIntegrationEventPublisher;
 import com.rafaelsousa.algashop.billing.application.invoice.event.InvoiceIssuedIntegrationEvent;
+import com.rafaelsousa.algashop.billing.application.invoice.event.InvoicePaidIntegrationEvent;
 import com.rafaelsousa.algashop.billing.application.utility.Mapper;
 import com.rafaelsousa.algashop.billing.domain.model.invoice.InvoiceCanceledEvent;
 import com.rafaelsousa.algashop.billing.domain.model.invoice.InvoiceIssuedEvent;
 import com.rafaelsousa.algashop.billing.domain.model.invoice.InvoicePaidEvent;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionalEventListener;
@@ -31,7 +34,10 @@ public class InvoiceEventListener {
     @Async
     @TransactionalEventListener
     public void listen(InvoicePaidEvent event) {
-        log.info("Invoice paid: {}", event.getInvoiceId());
+        InvoicePaidIntegrationEvent integrationEvent =
+                mapper.convert(event, InvoicePaidIntegrationEvent.class);
+
+        invoiceIntegrationEventPublisher.send(integrationEvent);
     }
 
     @Async

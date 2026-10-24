@@ -6,4 +6,5 @@ public interface SecurityChecks {
 	UUID getAuthenticatedUserId();
 	boolean isAuthenticated();
 	boolean isMachineAuthenticated();
+	boolean isAnonymous();
 }

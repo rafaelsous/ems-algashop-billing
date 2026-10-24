@@ -4,10 +4,13 @@ import com.rafaelsousa.algashop.billing.application.EventPublishingException;
 import com.rafaelsousa.algashop.billing.application.IntegrationEvent;
 import com.rafaelsousa.algashop.billing.application.invoice.event.InvoiceIntegrationEventPublisher;
 import com.rafaelsousa.algashop.billing.infrastructure.utility.BeanValidationUtil;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
+import org.springframework.kafka.KafkaException;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
 import org.springframework.stereotype.Component;
@@ -40,7 +43,7 @@ public class KafkaInvoiceIntegrationEventPublisher implements InvoiceIntegration
 		} catch (InterruptedException ex) {
 			Thread.currentThread().interrupt();
 			throw new EventPublishingException("Interrupted while publishing", event, ex);
-		} catch (TimeoutException | ExecutionException ex) {
+		} catch (TimeoutException | ExecutionException | KafkaException ex) {
 			throw new EventPublishingException("Failed to publish event", event, ex);
 		}
 

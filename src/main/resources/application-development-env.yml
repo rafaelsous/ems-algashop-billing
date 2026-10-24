@@ -43,7 +43,8 @@ spring:
     properties:
       spring.json.type.mapping:
         Ordering.OrderPlacedIntegrationEvent:com.rafaelsousa.algashop.billing.application.order.event.OrderPlacedIntegrationEvent,
-        Billing.InvoiceIssuedIntegrationEvent:com.rafaelsousa.algashop.billing.application.invoice.event.InvoiceIssuedIntegrationEvent
+        Billing.InvoiceIssuedIntegrationEvent:com.rafaelsousa.algashop.billing.application.invoice.event.InvoiceIssuedIntegrationEvent,
+        Billing.InvoicePaidIntegrationEvent:com.rafaelsousa.algashop.billing.application.invoice.event.InvoicePaidIntegrationEvent
     admin:
       fail-fast: true
       auto-create: true

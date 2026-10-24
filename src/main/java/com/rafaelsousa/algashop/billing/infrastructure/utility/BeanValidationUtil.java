@@ -2,9 +2,10 @@ package com.rafaelsousa.algashop.billing.infrastructure.utility;
 
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
-import jakarta.validation.ValidationException;
 import jakarta.validation.Validator;
+
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.stereotype.Component;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 
@@ -20,7 +21,7 @@ public class BeanValidationUtil {
 		Set<ConstraintViolation<Object>> violations = validator.validate(object);
 
 		if (!violations.isEmpty()) {
-			throw new ValidationException(new ConstraintViolationException(violations));
+			throw new ConstraintViolationException(violations);
 		}
 	}
 }
