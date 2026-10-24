@@ -29,9 +29,9 @@ public class KafkaConfig {
     public static final String IDEMPOTENCY_KEY_HEADER = "idempotency-key";
 
     private static final String DLT_PREFIX = "billing.dlt.";
-    private static final int PARTITIONS_NUMBER = 3;
-    private static final int REPLICAS_NUMBER = 3;
-    private static final String RETENTION_IN_MILLIS =
+    private static final int TOPIC_REPLICAS = 3;
+    private static final int TOPIC_PARTITIONS = 3;
+    private static final String RETENTION_30_DAYS =
             String.valueOf(Duration.ofDays(30).toMillis());
 
     private final AlgaShopMessagingKafkaProperties algaShopMessagingKafkaProperties;
@@ -80,8 +80,8 @@ public class KafkaConfig {
     @Bean
     public NewTopic invoiceEventTopic() {
         return TopicBuilder.name(algaShopMessagingKafkaProperties.getInvoiceEventTopicName())
-                .partitions(PARTITIONS_NUMBER)
-                .replicas(REPLICAS_NUMBER)
+                .partitions(TOPIC_PARTITIONS)
+                .replicas(TOPIC_REPLICAS)
                 .configs(Map.of(MIN_INSYNC_REPLICAS_CONFIG, "2"))
                 .build();
     }
@@ -98,14 +98,14 @@ public class KafkaConfig {
 
     private NewTopic createDeadLetterTopic(String originTopicName) {
         return TopicBuilder.name(DLT_PREFIX + originTopicName)
-                .partitions(PARTITIONS_NUMBER)
-                .replicas(REPLICAS_NUMBER)
+                .partitions(TOPIC_PARTITIONS)
+                .replicas(TOPIC_REPLICAS)
                 .configs(
                         Map.of(
                                 MIN_INSYNC_REPLICAS_CONFIG,
                                 "2",
                                 "retention.ms",
-                                RETENTION_IN_MILLIS))
+                            RETENTION_30_DAYS))
                 .build();
     }
 }
