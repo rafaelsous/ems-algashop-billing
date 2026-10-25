@@ -1,5 +1,6 @@
 package com.rafaelsousa.algashop.billing.infrastructure.listeners;
 
+import com.rafaelsousa.algashop.billing.application.invoice.event.InvoiceCanceledIntegrationEvent;
 import com.rafaelsousa.algashop.billing.application.invoice.event.InvoiceIntegrationEventPublisher;
 import com.rafaelsousa.algashop.billing.application.invoice.event.InvoiceIssuedIntegrationEvent;
 import com.rafaelsousa.algashop.billing.application.invoice.event.InvoicePaidIntegrationEvent;
@@ -43,6 +44,9 @@ public class InvoiceEventListener {
     @Async
     @TransactionalEventListener
     public void listen(InvoiceCanceledEvent event) {
-        log.info("Invoice canceled: {}", event.getInvoiceId());
+        InvoiceCanceledIntegrationEvent integrationEvent =
+                mapper.convert(event, InvoiceCanceledIntegrationEvent.class);
+
+        invoiceIntegrationEventPublisher.send(integrationEvent);
     }
 }
