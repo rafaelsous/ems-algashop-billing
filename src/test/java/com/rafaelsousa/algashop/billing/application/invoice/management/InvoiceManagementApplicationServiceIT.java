@@ -1,5 +1,10 @@
 package com.rafaelsousa.algashop.billing.application.invoice.management;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+
 import com.rafaelsousa.algashop.billing.application.AbstractApplicationIT;
 import com.rafaelsousa.algashop.billing.domain.model.creditcard.CreditCard;
 import com.rafaelsousa.algashop.billing.domain.model.creditcard.CreditCardNotFoundException;
@@ -11,35 +16,36 @@ import com.rafaelsousa.algashop.billing.domain.model.invoice.payment.PaymentGate
 import com.rafaelsousa.algashop.billing.domain.model.invoice.payment.PaymentRequest;
 import com.rafaelsousa.algashop.billing.domain.model.invoice.payment.PaymentStatus;
 import com.rafaelsousa.algashop.billing.infrastructure.listeners.InvoiceEventListener;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
+import org.springframework.test.context.event.ApplicationEvents;
+import org.springframework.test.context.event.RecordApplicationEvents;
 
 import java.util.UUID;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
-
+@RecordApplicationEvents
 class InvoiceManagementApplicationServiceIT extends AbstractApplicationIT {
     private final InvoiceRepository invoiceRepository;
     private final CreditCardRepository creditCardRepository;
     private final InvoiceManagementApplicationService invoiceManagementApplicationService;
 
-    @MockitoSpyBean
-    private InvoiceService invoiceService;
+    @MockitoSpyBean private InvoiceService invoiceService;
 
-    @MockitoBean
-    private PaymentGatewayService paymentGatewayService;
+    @MockitoBean private PaymentGatewayService paymentGatewayService;
 
-    @MockitoSpyBean
-    private InvoiceEventListener invoiceEventListener;
+    @MockitoSpyBean private InvoiceEventListener invoiceEventListener;
 
     @Autowired
-    InvoiceManagementApplicationServiceIT(InvoiceRepository invoiceRepository, CreditCardRepository creditCardRepository,
-                                          InvoiceManagementApplicationService invoiceManagementApplicationService) {
+    private ApplicationEvents applicationEvents;
+
+    @Autowired
+    InvoiceManagementApplicationServiceIT(
+            InvoiceRepository invoiceRepository,
+            CreditCardRepository creditCardRepository,
+            InvoiceManagementApplicationService invoiceManagementApplicationService) {
         this.invoiceRepository = invoiceRepository;
         this.creditCardRepository = creditCardRepository;
         this.invoiceManagementApplicationService = invoiceManagementApplicationService;
@@ -48,85 +54,100 @@ class InvoiceManagementApplicationServiceIT extends AbstractApplicationIT {
     @Test
     void shouldIssueInvoiceWithCreditCardAsPayment() {
         UUID customerId = UUID.randomUUID();
-        CreditCard creditCard = CreditCardTestDataBuilder.aCreditCard().customerId(customerId).build();
+        CreditCard creditCard =
+                CreditCardTestDataBuilder.aCreditCard().customerId(customerId).build();
         creditCardRepository.saveAndFlush(creditCard);
 
         when(securityChecks.getAuthenticatedUserId()).thenReturn(customerId);
         when(securityChecks.isAuthenticated()).thenReturn(true);
 
-        IssueInvoiceInput.IssueInvoiceInputBuilder invoiceInput = GenerateInvoiceInputTestDataBuilder.anInput();
+        IssueInvoiceInput.IssueInvoiceInputBuilder invoiceInput =
+                GenerateInvoiceInputTestDataBuilder.anInput();
         invoiceInput
                 .customerId(customerId)
                 .paymentSettings(
                         PaymentSettingsInput.builder()
                                 .method(PaymentMethod.CREDIT_CARD)
                                 .creditCardId(creditCard.getId())
-                                .build()
-                );
+                                .build());
 
         UUID invoiceId = invoiceManagementApplicationService.generate(invoiceInput.build());
 
         Invoice invoice = invoiceRepository.findById(invoiceId).orElseThrow();
 
-        assertThat(invoice).satisfies(i -> {
-            assertThat(i.getId()).isEqualTo(invoiceId);
-            assertThat(i.getCustomerId()).isEqualTo(customerId);
-            assertThat(i.getStatus()).isEqualTo(InvoiceStatus.UNPAID);
-            assertThat(i.getPaymentSettings().getMethod()).isEqualTo(PaymentMethod.CREDIT_CARD);
-            assertThat(i.getPaymentSettings().getCreditCardId()).isNotNull();
-            assertThat(i.getPaymentSettings().getCreditCardId()).isEqualTo(creditCard.getId());
-            assertThat(i.getVersion()).isZero();
-            assertThat(i.getCreatedAt()).isNotNull();
-            assertThat(i.getCreatedByUserId()).isNotNull();
-            assertThat(i.getLastModifiedAt()).isNotNull();
-            assertThat(i.getLastModifiedByUserId()).isNotNull();
-        });
+        assertThat(invoice)
+                .satisfies(
+                        i -> {
+                            assertThat(i.getId()).isEqualTo(invoiceId);
+                            assertThat(i.getCustomerId()).isEqualTo(customerId);
+                            assertThat(i.getStatus()).isEqualTo(InvoiceStatus.UNPAID);
+                            assertThat(i.getPaymentSettings().getMethod())
+                                    .isEqualTo(PaymentMethod.CREDIT_CARD);
+                            assertThat(i.getPaymentSettings().getCreditCardId()).isNotNull();
+                            assertThat(i.getPaymentSettings().getCreditCardId())
+                                    .isEqualTo(creditCard.getId());
+                            assertThat(i.getVersion()).isZero();
+                            assertThat(i.getCreatedAt()).isNotNull();
+                            assertThat(i.getCreatedByUserId()).isNotNull();
+                            assertThat(i.getLastModifiedAt()).isNotNull();
+                            assertThat(i.getLastModifiedByUserId()).isNotNull();
+                        });
 
-        verify(invoiceService).issue(invoice.getOrderId(), customerId, invoice.getPayer(), invoice.getItems());
-        verify(invoiceEventListener).listen(any(InvoiceIssuedEvent.class));
+        verify(invoiceService)
+                .issue(invoice.getOrderId(), customerId, invoice.getPayer(), invoice.getItems());
+
+        assertThat(applicationEvents.stream(InvoiceIssuedEvent.class).toList())
+            .singleElement()
+            .satisfies(event -> assertThat(event.getInvoiceId()).isEqualTo(invoiceId));
     }
 
     @Test
     void shouldIssueInvoiceWithGatewayBalanceAsPayment() {
         UUID customerId = UUID.randomUUID();
 
-        IssueInvoiceInput.IssueInvoiceInputBuilder invoiceInput = GenerateInvoiceInputTestDataBuilder.anInput();
+        IssueInvoiceInput.IssueInvoiceInputBuilder invoiceInput =
+                GenerateInvoiceInputTestDataBuilder.anInput();
         invoiceInput
                 .customerId(customerId)
                 .paymentSettings(
                         PaymentSettingsInput.builder()
                                 .method(PaymentMethod.GATEWAY_BALANCE)
-                                .build()
-                );
+                                .build());
 
         UUID invoiceId = invoiceManagementApplicationService.generate(invoiceInput.build());
 
         Invoice invoice = invoiceRepository.findById(invoiceId).orElseThrow();
 
-        assertThat(invoice).satisfies(i -> {
-            assertThat(i.getId()).isEqualTo(invoiceId);
-            assertThat(i.getCustomerId()).isEqualTo(customerId);
-            assertThat(i.getStatus()).isEqualTo(InvoiceStatus.UNPAID);
-            assertThat(i.getPaymentSettings().getCreditCardId()).isNull();
-        });
+        assertThat(invoice)
+                .satisfies(
+                        i -> {
+                            assertThat(i.getId()).isEqualTo(invoiceId);
+                            assertThat(i.getCustomerId()).isEqualTo(customerId);
+                            assertThat(i.getStatus()).isEqualTo(InvoiceStatus.UNPAID);
+                            assertThat(i.getPaymentSettings().getCreditCardId()).isNull();
+                        });
 
-        verify(invoiceService).issue(invoice.getOrderId(), customerId, invoice.getPayer(), invoice.getItems());
-        verify(invoiceEventListener).listen(any(InvoiceIssuedEvent.class));
+        verify(invoiceService)
+                .issue(invoice.getOrderId(), customerId, invoice.getPayer(), invoice.getItems());
+
+        assertThat(applicationEvents.stream(InvoiceIssuedEvent.class).toList())
+                .singleElement()
+                .satisfies(event -> assertThat(event.getInvoiceId()).isEqualTo(invoiceId));
     }
 
     @Test
     void shouldThrowExceptionWhenTryingIssueInvoiceWithoutNonExistentCreditCard() {
         UUID customerId = UUID.randomUUID();
 
-        IssueInvoiceInput.IssueInvoiceInputBuilder invoiceInputBuilder = GenerateInvoiceInputTestDataBuilder.anInput();
+        IssueInvoiceInput.IssueInvoiceInputBuilder invoiceInputBuilder =
+                GenerateInvoiceInputTestDataBuilder.anInput();
         invoiceInputBuilder
                 .customerId(customerId)
                 .paymentSettings(
                         PaymentSettingsInput.builder()
                                 .method(PaymentMethod.CREDIT_CARD)
                                 .creditCardId(UUID.randomUUID())
-                                .build()
-                );
+                                .build());
 
         IssueInvoiceInput invoiceInput = invoiceInputBuilder.build();
         assertThatThrownBy(() -> invoiceManagementApplicationService.generate(invoiceInput))
@@ -136,18 +157,18 @@ class InvoiceManagementApplicationServiceIT extends AbstractApplicationIT {
     @Test
     void shouldProcessInvoicePayment() {
         InvoiceTestDataBuilder invoiceTestDataBuilder = InvoiceTestDataBuilder.anInvoice();
-        Invoice invoice = invoiceTestDataBuilder
-                .paymentSettings(PaymentMethod.GATEWAY_BALANCE, null)
-                .build();
+        Invoice invoice =
+                invoiceTestDataBuilder.paymentSettings(PaymentMethod.GATEWAY_BALANCE, null).build();
         invoiceRepository.saveAndFlush(invoice);
 
         UUID invoiceId = invoice.getId();
-        Payment payment = Payment.builder()
-                .gatewayCode("12345")
-                .status(PaymentStatus.PAID)
-                .method(invoice.getPaymentSettings().getMethod())
-                .invoiceId(invoiceId)
-                .build();
+        Payment payment =
+                Payment.builder()
+                        .gatewayCode("12345")
+                        .status(PaymentStatus.PAID)
+                        .method(invoice.getPaymentSettings().getMethod())
+                        .invoiceId(invoiceId)
+                        .build();
 
         when(paymentGatewayService.capture(any(PaymentRequest.class))).thenReturn(payment);
 
@@ -155,32 +176,38 @@ class InvoiceManagementApplicationServiceIT extends AbstractApplicationIT {
 
         Invoice paidInvoice = invoiceRepository.findById(invoiceId).orElseThrow();
 
-        assertThat(paidInvoice).satisfies(i -> {
-            assertThat(i.isPaid()).isTrue();
-            assertThat(i.getPaymentSettings().getMethod()).isEqualTo(PaymentMethod.GATEWAY_BALANCE);
-            assertThat(i.getPaymentSettings().getCreditCardId()).isNull();
-        });
+        assertThat(paidInvoice)
+                .satisfies(
+                        i -> {
+                            assertThat(i.isPaid()).isTrue();
+                            assertThat(i.getPaymentSettings().getMethod())
+                                    .isEqualTo(PaymentMethod.GATEWAY_BALANCE);
+                            assertThat(i.getPaymentSettings().getCreditCardId()).isNull();
+                        });
 
         verify(paymentGatewayService, times(1)).capture(any(PaymentRequest.class));
         verify(invoiceService, times(1)).assignPayment(any(Invoice.class), any(Payment.class));
-        verify(invoiceEventListener).listen(any(InvoicePaidEvent.class));
+
+        assertThat(applicationEvents.stream(InvoiceIssuedEvent.class).toList())
+            .singleElement()
+            .satisfies(event -> assertThat(event.getInvoiceId()).isEqualTo(invoiceId));
     }
 
     @Test
     void shouldProcessInvoicePaymentAndCancelInvoice() {
         InvoiceTestDataBuilder invoiceTestDataBuilder = InvoiceTestDataBuilder.anInvoice();
-        Invoice invoice = invoiceTestDataBuilder
-                .paymentSettings(PaymentMethod.GATEWAY_BALANCE, null)
-                .build();
+        Invoice invoice =
+                invoiceTestDataBuilder.paymentSettings(PaymentMethod.GATEWAY_BALANCE, null).build();
         invoiceRepository.saveAndFlush(invoice);
 
         UUID invoiceId = invoice.getId();
-        Payment payment = Payment.builder()
-                .gatewayCode("12345")
-                .status(PaymentStatus.FAILED)
-                .method(invoice.getPaymentSettings().getMethod())
-                .invoiceId(invoiceId)
-                .build();
+        Payment payment =
+                Payment.builder()
+                        .gatewayCode("12345")
+                        .status(PaymentStatus.FAILED)
+                        .method(invoice.getPaymentSettings().getMethod())
+                        .invoiceId(invoiceId)
+                        .build();
 
         when(paymentGatewayService.capture(any(PaymentRequest.class))).thenReturn(payment);
 
@@ -192,20 +219,23 @@ class InvoiceManagementApplicationServiceIT extends AbstractApplicationIT {
 
         verify(paymentGatewayService, times(1)).capture(any(PaymentRequest.class));
         verify(invoiceService, times(1)).assignPayment(any(Invoice.class), any(Payment.class));
-        verify(invoiceEventListener).listen(any(InvoiceCanceledEvent.class));
+
+        assertThat(applicationEvents.stream(InvoiceIssuedEvent.class).toList())
+            .singleElement()
+            .satisfies(event -> assertThat(event.getInvoiceId()).isEqualTo(invoiceId));
     }
 
     @Test
     void shouldCancelInvoiceWhenPaymentGatewayServiceThrowsException() {
         InvoiceTestDataBuilder invoiceTestDataBuilder = InvoiceTestDataBuilder.anInvoice();
-        Invoice invoice = invoiceTestDataBuilder
-                .paymentSettings(PaymentMethod.GATEWAY_BALANCE, null)
-                .build();
+        Invoice invoice =
+                invoiceTestDataBuilder.paymentSettings(PaymentMethod.GATEWAY_BALANCE, null).build();
         invoiceRepository.saveAndFlush(invoice);
 
         UUID invoiceId = invoice.getId();
 
-        when(paymentGatewayService.capture(any(PaymentRequest.class))).thenThrow(new RuntimeException("Payment capture failed"));
+        when(paymentGatewayService.capture(any(PaymentRequest.class)))
+                .thenThrow(new RuntimeException("Payment capture failed"));
 
         invoiceManagementApplicationService.processPayment(invoiceId);
 
@@ -215,6 +245,9 @@ class InvoiceManagementApplicationServiceIT extends AbstractApplicationIT {
 
         verify(paymentGatewayService, times(1)).capture(any(PaymentRequest.class));
         verify(invoiceService, never()).assignPayment(any(Invoice.class), any(Payment.class));
-        verify(invoiceEventListener).listen(any(InvoiceCanceledEvent.class));
+
+        assertThat(applicationEvents.stream(InvoiceIssuedEvent.class).toList())
+            .singleElement()
+            .satisfies(event -> assertThat(event.getInvoiceId()).isEqualTo(invoiceId));
     }
 }
