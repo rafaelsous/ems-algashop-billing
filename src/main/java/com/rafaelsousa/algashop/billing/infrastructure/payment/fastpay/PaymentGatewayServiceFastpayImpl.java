@@ -11,7 +11,9 @@ import com.rafaelsousa.algashop.billing.domain.model.invoice.payment.PaymentGate
 import com.rafaelsousa.algashop.billing.domain.model.invoice.payment.PaymentRequest;
 import com.rafaelsousa.algashop.billing.domain.model.invoice.payment.PaymentStatus;
 import com.rafaelsousa.algashop.billing.infrastructure.payment.AlgaShopPaymentProperties;
+
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
@@ -41,25 +43,36 @@ public class PaymentGatewayServiceFastpayImpl implements PaymentGatewayService {
         return convertToPayment(response);
     }
 
+    @Override
+    public void refund(String gatewayCode) {
+        fastpayPaymentApiClient.refund(gatewayCode);
+    }
+
     private FastpayPaymentInput convertToInput(PaymentRequest request) {
         Payer payer = request.getPayer();
         Address address = payer.getAddress();
 
-        var builder = FastpayPaymentInput.builder()
-                .totalAmount(request.getAmount())
-                .fullName(payer.getFullName())
-                .document(payer.getDocument())
-                .phone(payer.getPhone())
-                .addressLine1(address.getStreet().concat(", ").concat(address.getNumber()))
-                .addressLine2(address.getComplement())
-                .referenceCode(request.getInvoiceId().toString())
-                .replyToUrl(algaShopPaymentProperties.getFastpay().getWebhookUrl())
-                .zipCode(address.getZipCode());
+        var builder =
+                FastpayPaymentInput.builder()
+                        .totalAmount(request.getAmount())
+                        .fullName(payer.getFullName())
+                        .document(payer.getDocument())
+                        .phone(payer.getPhone())
+                        .addressLine1(address.getStreet().concat(", ").concat(address.getNumber()))
+                        .addressLine2(address.getComplement())
+                        .referenceCode(request.getInvoiceId().toString())
+                        .replyToUrl(algaShopPaymentProperties.getFastpay().getWebhookUrl())
+                        .zipCode(address.getZipCode());
 
         if (Objects.requireNonNull(request.getMethod()) == PaymentMethod.CREDIT_CARD) {
             builder.method(FastpayPaymentMethod.CREDIT.name());
-            CreditCard creditCard = creditCardRepository.findById(request.getCreditCardId())
-                    .orElseThrow(() -> new CreditCardNotFoundException(request.getCreditCardId()));
+            CreditCard creditCard =
+                    creditCardRepository
+                            .findById(request.getCreditCardId())
+                            .orElseThrow(
+                                    () ->
+                                            new CreditCardNotFoundException(
+                                                    request.getCreditCardId()));
 
             builder.creditCardId(creditCard.getGatewayCode());
         } else if (request.getMethod() == PaymentMethod.GATEWAY_BALANCE) {
@@ -70,22 +83,25 @@ public class PaymentGatewayServiceFastpayImpl implements PaymentGatewayService {
     }
 
     private Payment convertToPayment(FastpayPaymentResponse response) {
-        var builder = Payment.builder()
-                .gatewayCode(response.getId())
-                .invoiceId(UUID.fromString(response.getReferenceCode()));
+        var builder =
+                Payment.builder()
+                        .gatewayCode(response.getId())
+                        .invoiceId(UUID.fromString(response.getReferenceCode()));
 
         FastpayPaymentMethod fastpayPaymentMethod;
         try {
             fastpayPaymentMethod = FastpayPaymentMethod.valueOf(response.getMethod());
         } catch (Exception ex) {
-            throw new IllegalArgumentException("Unknown payment method: " + response.getMethod(), ex);
+            throw new IllegalArgumentException(
+                    "Unknown payment method: " + response.getMethod(), ex);
         }
 
         FastpayPaymentStatus fastpayPaymentStatus;
         try {
             fastpayPaymentStatus = FastpayPaymentStatus.valueOf(response.getStatus());
         } catch (Exception ex) {
-            throw new IllegalArgumentException("Unknown payment status: " + response.getStatus(), ex);
+            throw new IllegalArgumentException(
+                    "Unknown payment status: " + response.getStatus(), ex);
         }
 
         PaymentMethod paymentMethod = FastpayEnumConverter.convert(fastpayPaymentMethod);

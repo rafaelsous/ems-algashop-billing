@@ -1,4 +1,4 @@
-package com.rafaelsousa.algashop.billing.infrastructure.listeners;
+package com.rafaelsousa.algashop.billing.infrastructure.listener;
 
 import com.rafaelsousa.algashop.billing.application.invoice.event.InvoiceCanceledIntegrationEvent;
 import com.rafaelsousa.algashop.billing.application.invoice.event.InvoiceIntegrationEventPublisher;

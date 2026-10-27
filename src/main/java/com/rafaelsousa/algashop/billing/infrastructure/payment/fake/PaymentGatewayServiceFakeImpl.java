@@ -5,6 +5,7 @@ import com.rafaelsousa.algashop.billing.domain.model.invoice.payment.Payment;
 import com.rafaelsousa.algashop.billing.domain.model.invoice.payment.PaymentGatewayService;
 import com.rafaelsousa.algashop.billing.domain.model.invoice.payment.PaymentRequest;
 import com.rafaelsousa.algashop.billing.domain.model.invoice.payment.PaymentStatus;
+
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
@@ -32,5 +33,10 @@ public class PaymentGatewayServiceFakeImpl implements PaymentGatewayService {
                 .gatewayCode(UUID.randomUUID().toString())
                 .status(PaymentStatus.PAID)
                 .build();
+    }
+
+    @Override
+    public void refund(String gatewayCode) {
+        // Do nothing in the fake implementation
     }
 }

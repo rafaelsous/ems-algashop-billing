@@ -15,7 +15,7 @@ import com.rafaelsousa.algashop.billing.domain.model.invoice.payment.Payment;
 import com.rafaelsousa.algashop.billing.domain.model.invoice.payment.PaymentGatewayService;
 import com.rafaelsousa.algashop.billing.domain.model.invoice.payment.PaymentRequest;
 import com.rafaelsousa.algashop.billing.domain.model.invoice.payment.PaymentStatus;
-import com.rafaelsousa.algashop.billing.infrastructure.listeners.InvoiceEventListener;
+import com.rafaelsousa.algashop.billing.infrastructure.listener.InvoiceEventListener;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

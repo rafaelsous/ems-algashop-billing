@@ -9,8 +9,10 @@ import com.rafaelsousa.algashop.billing.domain.model.invoice.payment.Payment;
 import com.rafaelsousa.algashop.billing.domain.model.invoice.payment.PaymentGatewayService;
 import com.rafaelsousa.algashop.billing.domain.model.invoice.payment.PaymentRequest;
 import com.rafaelsousa.algashop.billing.domain.model.invoice.payment.PaymentStatus;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,15 +32,21 @@ public class InvoiceManagementApplicationService {
         PaymentSettingsInput paymentSettings = issueInvoiceInput.getPaymentSettings();
 
         if (paymentSettings.getMethod().equals(PaymentMethod.CREDIT_CARD)) {
-            verifyCreditCartId(issueInvoiceInput.getCustomerId(), paymentSettings.getCreditCardId());
+            verifyCreditCartId(
+                    issueInvoiceInput.getCustomerId(), paymentSettings.getCreditCardId());
         }
 
         Payer payer = convertToPayer(issueInvoiceInput.getPayer());
         Set<LineItem> items = convertToLineItems(issueInvoiceInput.getItems());
 
-        Invoice invoice = invoiceService.issue(issueInvoiceInput.getOrderId(),
-                issueInvoiceInput.getCustomerId(), payer, items);
-        invoice.changePaymentSettings(paymentSettings.getMethod(), paymentSettings.getCreditCardId());
+        Invoice invoice =
+                invoiceService.issue(
+                        issueInvoiceInput.getOrderId(),
+                        issueInvoiceInput.getCustomerId(),
+                        payer,
+                        items);
+        invoice.changePaymentSettings(
+                paymentSettings.getMethod(), paymentSettings.getCreditCardId());
 
         invoiceRepository.saveAndFlush(invoice);
 
@@ -47,8 +55,10 @@ public class InvoiceManagementApplicationService {
 
     @Transactional
     public void processPayment(UUID invoiceId) {
-        Invoice invoice = invoiceRepository.findById(invoiceId)
-                .orElseThrow(() -> new InvoiceNotFoundException(invoiceId));
+        Invoice invoice =
+                invoiceRepository
+                        .findById(invoiceId)
+                        .orElseThrow(() -> new InvoiceNotFoundException(invoiceId));
 
         PaymentRequest paymentRequest = toPaymentRequest(invoice);
 
@@ -71,10 +81,24 @@ public class InvoiceManagementApplicationService {
 
     @Transactional
     public void updatePaymentStatus(UUID invoiceId, PaymentStatus paymentStatus) {
-        Invoice invoice = invoiceRepository.findById(invoiceId)
-                .orElseThrow(() -> new InvoiceNotFoundException(invoiceId));
+        Invoice invoice =
+                invoiceRepository
+                        .findById(invoiceId)
+                        .orElseThrow(() -> new InvoiceNotFoundException(invoiceId));
 
         invoice.updatePaymentStatus(paymentStatus);
+        invoiceRepository.saveAndFlush(invoice);
+    }
+
+    @Transactional
+    public void refundByOrderId(String orderId) {
+        Invoice invoice = invoiceRepository
+            .findByOrderId(orderId)
+            .orElseThrow(() -> new InvoiceNotFoundException(orderId));
+
+        paymentGatewayService.refund(invoice.getPaymentSettings().getGatewayCode());
+
+        invoice.updatePaymentStatus(PaymentStatus.REFUNDED);
         invoiceRepository.saveAndFlush(invoice);
     }
 
@@ -93,11 +117,12 @@ public class InvoiceManagementApplicationService {
 
         int itemNumber = 1;
         for (LineItemInput itemInput : itemInputs) {
-            lineItems.add(LineItem.builder()
-                    .number(itemNumber)
-                    .name(itemInput.getName())
-                    .amount(itemInput.getAmount())
-                    .build());
+            lineItems.add(
+                    LineItem.builder()
+                            .number(itemNumber)
+                            .name(itemInput.getName())
+                            .amount(itemInput.getAmount())
+                            .build());
 
             itemNumber++;
         }
@@ -113,15 +138,16 @@ public class InvoiceManagementApplicationService {
                 .document(payerData.getDocument())
                 .email(payerData.getEmail())
                 .phone(payerData.getPhone())
-                .address(Address.builder()
-                        .street(addressData.getStreet())
-                        .number(addressData.getNumber())
-                        .neighborhood(addressData.getNeighborhood())
-                        .complement(addressData.getComplement())
-                        .city(addressData.getCity())
-                        .state(addressData.getState())
-                        .zipCode(addressData.getZipCode())
-                        .build())
+                .address(
+                        Address.builder()
+                                .street(addressData.getStreet())
+                                .number(addressData.getNumber())
+                                .neighborhood(addressData.getNeighborhood())
+                                .complement(addressData.getComplement())
+                                .city(addressData.getCity())
+                                .state(addressData.getState())
+                                .zipCode(addressData.getZipCode())
+                                .build())
                 .build();
     }
 
