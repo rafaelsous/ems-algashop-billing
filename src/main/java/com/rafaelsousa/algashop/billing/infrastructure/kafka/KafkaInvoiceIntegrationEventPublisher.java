@@ -1,7 +1,7 @@
 package com.rafaelsousa.algashop.billing.infrastructure.kafka;
 
 import com.rafaelsousa.algashop.billing.application.EventPublishingException;
-import com.rafaelsousa.algashop.billing.application.IntegrationEvent;
+import com.rafaelsousa.algashop.billing.application.OutboundIntegrationEvent;
 import com.rafaelsousa.algashop.billing.application.invoice.event.InvoiceIntegrationEventPublisher;
 import com.rafaelsousa.algashop.billing.infrastructure.utility.BeanValidationUtil;
 
@@ -28,7 +28,7 @@ public class KafkaInvoiceIntegrationEventPublisher implements InvoiceIntegration
 	private final AlgaShopMessagingKafkaProperties properties;
 
 	@Override
-    public void send(IntegrationEvent event) {
+    public void send(OutboundIntegrationEvent event) {
 		beanValidationUtil.validate(event);
 
 		SendResult<String, Object> result;
