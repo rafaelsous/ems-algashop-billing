@@ -87,18 +87,8 @@ public class KafkaConfig {
     }
 
     @Bean
-    public NewTopic orderEventsDlt(AlgaShopMessagingKafkaProperties properties) {
-        return createDeadLetterTopic(properties.getOrderEventTopicName());
-    }
-
-    @Bean
     public NewTopic invoiceEventsDlt(AlgaShopMessagingKafkaProperties properties) {
         return createDeadLetterTopic(properties.getInvoiceEventTopicName());
-    }
-
-    @Bean
-    public NewTopic stockEventsDlt(AlgaShopMessagingKafkaProperties properties) {
-        return createDeadLetterTopic(properties.getStockEventTopicName());
     }
 
     private NewTopic createDeadLetterTopic(String originTopicName) {

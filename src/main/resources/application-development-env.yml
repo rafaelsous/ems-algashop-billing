@@ -42,11 +42,9 @@ spring:
     bootstrap-servers: algashop-kafka-1:9092,algashop-kafka-2:9093,algashop-kafka-3:9094
     properties:
       spring.json.type.mapping:
-        Ordering.OrderPlacedIntegrationEvent:com.rafaelsousa.algashop.billing.application.order.event.OrderPlacedIntegrationEvent,
         Billing.InvoiceIssuedIntegrationEvent:com.rafaelsousa.algashop.billing.application.invoice.event.InvoiceIssuedIntegrationEvent,
         Billing.InvoicePaidIntegrationEvent:com.rafaelsousa.algashop.billing.application.invoice.event.InvoicePaidIntegrationEvent,
-        Billing.InvoiceCanceledIntegrationEvent:com.rafaelsousa.algashop.billing.application.invoice.event.InvoiceCanceledIntegrationEvent,
-        ProductCatalog.StockReservationRejectedIntegrationEvent:com.rafaelsousa.algashop.billing.application.stock.event.StockReservationRejectedIntegrationEvent
+        Billing.InvoiceCanceledIntegrationEvent:com.rafaelsousa.algashop.billing.application.invoice.event.InvoiceCanceledIntegrationEvent
     admin:
       fail-fast: true
       auto-create: true
@@ -81,12 +79,8 @@ algashop:
         webhook-url: ${billing.params.fastpay.webhook-url}
   messaging:
     kafka:
-      order-event-topic-name: ordering.order.events
       invoice-event-topic-name: billing.invoice.events
-      stock-event-topic-name: product-catalog.stock.events
-      order-events-consumer-group: billing.order-events
       invoice-events-consumer-group: billing.invoice-events
-      stock-events-consumer-group: billing.stock-events
 management:
   info:
     env.enabled: true
