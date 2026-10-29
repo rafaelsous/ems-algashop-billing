@@ -2,7 +2,9 @@ package com.rafaelsousa.algashop.billing.infrastructure.kafka;
 
 import com.rafaelsousa.algashop.billing.domain.model.DomainEntityNotFoundException;
 import com.rafaelsousa.algashop.billing.domain.model.DomainException;
+
 import jakarta.validation.ConstraintViolationException;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -31,8 +33,7 @@ public class KafkaConfig {
     private static final String DLT_PREFIX = "billing.dlt.";
     private static final int TOPIC_REPLICAS = 3;
     private static final int TOPIC_PARTITIONS = 3;
-    private static final String RETENTION_30_DAYS =
-            String.valueOf(Duration.ofDays(30).toMillis());
+    private static final String RETENTION_30_DAYS = String.valueOf(Duration.ofDays(30).toMillis());
 
     private final AlgaShopMessagingKafkaProperties algaShopMessagingKafkaProperties;
 
@@ -79,7 +80,16 @@ public class KafkaConfig {
 
     @Bean
     public NewTopic invoiceEventTopic() {
-        return TopicBuilder.name(algaShopMessagingKafkaProperties.getInvoiceEventTopicName())
+        return TopicBuilder.name(algaShopMessagingKafkaProperties.getInvoiceEventsTopicName())
+                .partitions(TOPIC_PARTITIONS)
+                .replicas(TOPIC_REPLICAS)
+                .configs(Map.of(MIN_INSYNC_REPLICAS_CONFIG, "2"))
+                .build();
+    }
+
+    @Bean
+    public NewTopic invoiceCommandTopic(AlgaShopMessagingKafkaProperties properties) {
+        return TopicBuilder.name(properties.getInvoiceCommandsTopicName())
                 .partitions(TOPIC_PARTITIONS)
                 .replicas(TOPIC_REPLICAS)
                 .configs(Map.of(MIN_INSYNC_REPLICAS_CONFIG, "2"))
@@ -88,19 +98,14 @@ public class KafkaConfig {
 
     @Bean
     public NewTopic invoiceEventsDlt(AlgaShopMessagingKafkaProperties properties) {
-        return createDeadLetterTopic(properties.getInvoiceEventTopicName());
+        return createDeadLetterTopic(properties.getInvoiceEventsTopicName());
     }
 
     private NewTopic createDeadLetterTopic(String originTopicName) {
         return TopicBuilder.name(DLT_PREFIX + originTopicName)
                 .partitions(TOPIC_PARTITIONS)
                 .replicas(TOPIC_REPLICAS)
-                .configs(
-                        Map.of(
-                                MIN_INSYNC_REPLICAS_CONFIG,
-                                "2",
-                                "retention.ms",
-                            RETENTION_30_DAYS))
+                .configs(Map.of(MIN_INSYNC_REPLICAS_CONFIG, "2", "retention.ms", RETENTION_30_DAYS))
                 .build();
     }
 }
