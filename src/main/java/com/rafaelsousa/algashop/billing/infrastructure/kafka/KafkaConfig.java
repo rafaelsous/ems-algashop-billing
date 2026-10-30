@@ -101,6 +101,11 @@ public class KafkaConfig {
         return createDeadLetterTopic(properties.getInvoiceEventsTopicName());
     }
 
+    @Bean
+    public NewTopic invoiceCommandsDlt(AlgaShopMessagingKafkaProperties properties) {
+        return createDeadLetterTopic(properties.getInvoiceCommandsTopicName());
+    }
+
     private NewTopic createDeadLetterTopic(String originTopicName) {
         return TopicBuilder.name(DLT_PREFIX + originTopicName)
                 .partitions(TOPIC_PARTITIONS)

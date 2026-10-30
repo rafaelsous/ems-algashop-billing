@@ -44,7 +44,8 @@ spring:
       spring.json.type.mapping:
         Billing.InvoiceIssuedIntegrationEvent:com.rafaelsousa.algashop.billing.application.invoice.event.InvoiceIssuedIntegrationEvent,
         Billing.InvoicePaidIntegrationEvent:com.rafaelsousa.algashop.billing.application.invoice.event.InvoicePaidIntegrationEvent,
-        Billing.InvoiceCanceledIntegrationEvent:com.rafaelsousa.algashop.billing.application.invoice.event.InvoiceCanceledIntegrationEvent
+        Billing.InvoiceCanceledIntegrationEvent:com.rafaelsousa.algashop.billing.application.invoice.event.InvoiceCanceledIntegrationEvent,
+        Billing.IssueInvoiceIntegrationCommand:com.rafaelsousa.algashop.billing.application.invoice.command.IssueInvoiceIntegrationCommand
     admin:
       fail-fast: true
       auto-create: true
