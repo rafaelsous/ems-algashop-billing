@@ -5,6 +5,7 @@ import com.rafaelsousa.algashop.billing.application.invoice.command.IssueInvoice
 import com.rafaelsousa.algashop.billing.application.invoice.management.InvoiceManagementApplicationService;
 import com.rafaelsousa.algashop.billing.application.invoice.management.IssueInvoiceInput;
 import com.rafaelsousa.algashop.billing.application.invoice.management.IssueInvoiceInputAssembler;
+import com.rafaelsousa.algashop.billing.infrastructure.persistence.reply.PendingReplies;
 import jakarta.validation.Valid;
 
 import lombok.RequiredArgsConstructor;
@@ -16,8 +17,10 @@ import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.nio.charset.StandardCharsets;
+import java.util.UUID;
 
 @Slf4j
 @Component
@@ -27,8 +30,10 @@ import java.nio.charset.StandardCharsets;
         concurrency = "3",
         topics = "#{algaShopMessagingKafkaProperties.invoiceCommandsTopicName}")
 public class KafkaInvoiceIntegrationCommandListener {
-private final IssueInvoiceInputAssembler issueInvoiceInputAssembler;
-private final InvoiceManagementApplicationService invoiceManagementApplicationService;
+    private final PendingReplies pendingReplies;
+    private final TransactionTemplate transactionTemplate;
+    private final IssueInvoiceInputAssembler issueInvoiceInputAssembler;
+    private final InvoiceManagementApplicationService invoiceManagementApplicationService;
 
     @KafkaHandler(isDefault = true)
     public void handle(
@@ -54,11 +59,19 @@ private final InvoiceManagementApplicationService invoiceManagementApplicationSe
             @Header(value = KafkaHeaders.OFFSET, required = false) Long offset) {
         logReceived(command, messageKey, partition, offset);
 
-        requireHeader(replyTopic, KafkaHeaders.REPLY_TOPIC);
-        requireHeader(correlationId, KafkaHeaders.CORRELATION_ID);
+        String sagaReplyTopic = requireHeader(replyTopic, KafkaHeaders.REPLY_TOPIC);
+        String sagaCorrelationId = requireHeader(correlationId, KafkaHeaders.CORRELATION_ID);
 
         IssueInvoiceInput input = issueInvoiceInputAssembler.toIssueInvoiceInput(command);
-        invoiceManagementApplicationService.generate(input);
+
+        transactionTemplate.executeWithoutResult(_ -> {
+            UUID invoiceId = invoiceManagementApplicationService.generate(input);
+            pendingReplies.register(
+                invoiceId,
+                command.getOrderId(),
+                sagaCorrelationId,
+                sagaReplyTopic);
+        });
     }
 
     private String requireHeader(byte[] value, String name) {
