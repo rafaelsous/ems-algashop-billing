@@ -45,7 +45,9 @@ spring:
         Billing.InvoiceIssuedIntegrationEvent:com.rafaelsousa.algashop.billing.application.invoice.event.InvoiceIssuedIntegrationEvent,
         Billing.InvoicePaidIntegrationEvent:com.rafaelsousa.algashop.billing.application.invoice.event.InvoicePaidIntegrationEvent,
         Billing.InvoiceCanceledIntegrationEvent:com.rafaelsousa.algashop.billing.application.invoice.event.InvoiceCanceledIntegrationEvent,
-        Billing.IssueInvoiceIntegrationCommand:com.rafaelsousa.algashop.billing.application.invoice.command.IssueInvoiceIntegrationCommand
+        Billing.IssueInvoiceIntegrationCommand:com.rafaelsousa.algashop.billing.application.invoice.command.IssueInvoiceIntegrationCommand,
+        Billing.InvoicePaidIntegrationReply:com.rafaelsousa.algashop.billing.application.invoice.reply.InvoicePaidIntegrationReply,
+        Billing.InvoiceCanceledIntegrationReply:com.rafaelsousa.algashop.billing.application.invoice.reply.InvoiceCanceledIntegrationReply
     admin:
       fail-fast: true
       auto-create: true
