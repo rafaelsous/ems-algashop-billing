@@ -46,6 +46,7 @@ spring:
         Billing.InvoicePaidIntegrationEvent:com.rafaelsousa.algashop.billing.application.invoice.event.InvoicePaidIntegrationEvent,
         Billing.InvoiceCanceledIntegrationEvent:com.rafaelsousa.algashop.billing.application.invoice.event.InvoiceCanceledIntegrationEvent,
         Billing.IssueInvoiceIntegrationCommand:com.rafaelsousa.algashop.billing.application.invoice.command.IssueInvoiceIntegrationCommand,
+        Billing.CancelInvoiceIntegrationCommand:com.rafaelsousa.algashop.billing.application.invoice.command.CancelInvoiceIntegrationCommand,
         Billing.InvoicePaidIntegrationReply:com.rafaelsousa.algashop.billing.application.invoice.reply.InvoicePaidIntegrationReply,
         Billing.InvoiceCanceledIntegrationReply:com.rafaelsousa.algashop.billing.application.invoice.reply.InvoiceCanceledIntegrationReply
     admin:
