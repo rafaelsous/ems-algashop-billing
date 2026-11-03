@@ -54,7 +54,7 @@ class KafkaBeanValidationConfigurerTest {
 	}
 
 	private void validateCommandPayload(InboundIntegrationCommand command, Errors errors) {
-		assert registrar.getValidator() != null;
+		assertThat(registrar.getValidator()).isNotNull();
 		registrar.getValidator().validate(command, errors);
 	}
 }
